@@ -46,3 +46,47 @@ a.discussion-area {
     padding: 0; /* No additional padding */
     margin: 0; /* No additional margin */
 }
+
+#message-list {
+    padding: 10px; /* Some padding around messages */
+    max-height: 80vh; /* Limit the height and make it scrollable */
+    overflow-y: auto; /* Add scroll for overflow */
+    margin: 20px; /* Give some space around the chat container */
+}
+
+.message {
+    border: 1px solid rgb(62, 55, 117); /* Slight border for each message */
+    border-radius: 5px; /* Rounded corners for the messages */
+    padding: 8px 12px; /* Padding inside each message */
+    margin-bottom: 10px; /* Space between messages */
+    max-width: 75%; /* Messages use up to 75% of the container width */
+}
+
+.message header {
+    display: flex; /* Use flexbox for positioning sender and time */
+    justify-content: flex-start;
+    margin-bottom: 8px; /* Space between header and message text */
+    font-size: 0.9em; /* Smaller font size for header */
+}
+
+.message strong {
+    font-weight: bold; /* Make the sender's name bold */
+    font-size: large;
+    color: rgb(97, 86, 180);
+    margin-left: 1rem;
+}
+
+.message time {
+    color: #9e9e9e;
+    font-style: italic; /* Italicize the timestamp */
+    font-size: large;
+}
+
+.message p {
+    font-size: 1em; /* Regular font size for message text */
+    line-height: 1.5; /* Space out lines a bit */
+}
+
+#message-list p {
+    text-align: center; /* Center the text if no messages */
+}

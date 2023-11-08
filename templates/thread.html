@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebChat</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <header>
+        <h1>WebChat</h1>
+    </header>
+    <main>
+        <section id="message-list">
+            {% for message in messages %}
+            <article class="message">
+                <header>
+                    <time>{{ message.sent_time }}</time>
+                    <strong>{{ message.sender }}</strong>
+                </header>
+                <p>{{ message.text }}</p>
+            </article>
+            {% else %}
+            <p>No messages yet.</p>
+            {% endfor %}
+        </section>
+    </main>
+</body>
+</html>

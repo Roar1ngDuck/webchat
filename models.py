@@ -7,11 +7,15 @@ import app
 from sqlalchemy import text
 
 class Message:
-    def __init__(self, thread:int, sender:int, text:str):
-        self.thread = thread
-        self.sender = sender
-        self.text = text
-        self.sent_time = datetime.now()
+    @classmethod
+    def create_from_sql_result(cls, sql_result):
+        instance = cls()
+        instance.id = sql_result[0]
+        instance.thread = sql_result[1]
+        instance.sender = sql_result[2]
+        instance.text = sql_result[3]
+        instance.sent_time = datetime.strftime(sql_result[4], "%d.%m.%Y %H:%M")
+        return instance
 
     def insert(self):
         sql = text("""INSERT INTO messages (thread, sender, text, sent_time) VALUES (:thread, :sender, :text, :sent_time)""")
@@ -26,6 +30,20 @@ class Thread:
         instance.area = sql_result[1]
         instance.title = sql_result[2]
         return instance
+    
+    @classmethod
+    def create_from_db(cls, id):
+        instance = cls()
+        instance.id = id
+        sql = text("""SELECT * FROM messages m WHERE m.thread = :thread_id""")
+        result = app.db.session.execute(sql, {"thread_id" : id})
+        message_results = result.fetchall()
+        instance.messages:list[Thread] = []
+        for message_result in message_results:
+            message = Message.create_from_sql_result(message_result)
+            instance.messages.append(message)
+        return instance
+
     
     def query_message_count(self):
         sql = text("""SELECT COUNT(*) FROM messages m WHERE m.thread = :thread_id""")

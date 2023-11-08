@@ -32,4 +32,6 @@ def view_area(area_id):
 
 @app.route("/thread/<int:thread_id>")
 def view_thread(thread_id):
-    pass
+    thread = Thread.create_from_db(thread_id)
+
+    return render_template("thread.html", messages=thread.messages)
