@@ -33,11 +33,3 @@ main {
     padding: 1rem;
     width: calc(33% - 1rem);
 }
-
-.discussion-area h2 {
-    margin-bottom: 0.5rem;
-}
-
-.discussion-area p {
-    margin-bottom: 0.25rem;
-}

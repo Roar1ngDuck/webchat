@@ -12,36 +12,14 @@
     </header>
     <main>
         <section class="discussion-areas">
+            {% for area in areas %}
             <article class="discussion-area">
-                <h2>Discussion Area Title</h2>
-                <p>Threads: <span class="thread-count">10</span></p>
-                <p>Messages: <span class="message-count">200</span></p>
-                <p>Last Message: <time class="last-message">01.01.2023</time></p>
+                <h2>{{ area.topic }}</h2>
+                <p>Threads: <span class="thread-count">{{ area.thread_count }}</span></p>
+                <p>Messages: <span class="message-count">{{ area.message_count }}</span></p>
+                <p>Last Message: <time class="last-message"></time></p>
             </article>
-            <article class="discussion-area">
-                <h2>Discussion Area Title</h2>
-                <p>Threads: <span class="thread-count">10</span></p>
-                <p>Messages: <span class="message-count">200</span></p>
-                <p>Last Message: <time class="last-message">01.01.2023</time></p>
-            </article>
-            <article class="discussion-area">
-                <h2>Discussion Area Title</h2>
-                <p>Threads: <span class="thread-count">10</span></p>
-                <p>Messages: <span class="message-count">200</span></p>
-                <p>Last Message: <time class="last-message">01.01.2023</time></p>
-            </article>
-            <article class="discussion-area">
-                <h2>Discussion Area Title</h2>
-                <p>Threads: <span class="thread-count">10</span></p>
-                <p>Messages: <span class="message-count">200</span></p>
-                <p>Last Message: <time class="last-message">01.01.2023</time></p>
-            </article>
-            <article class="discussion-area">
-                <h2>Discussion Area Title</h2>
-                <p>Threads: <span class="thread-count">10</span></p>
-                <p>Messages: <span class="message-count">200</span></p>
-                <p>Last Message: <time class="last-message">01.01.2023</time></p>
-            </article>
+            {% endfor %}
         </section>
     </main>
 </body>
