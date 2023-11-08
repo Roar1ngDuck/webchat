@@ -15,6 +15,7 @@ def get_areas():
         area = Area(result[1], result[0])
         area.query_thread_count()
         area.query_message_count()
+        area.query_last_message()
         areas.append(area)
 
     return areas

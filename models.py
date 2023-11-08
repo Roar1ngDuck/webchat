@@ -11,7 +11,7 @@ class Message:
         self.thread = thread
         self.sender = sender
         self.text = text
-        self.sent_time = datetime.utcnow()
+        self.sent_time = datetime.now()
 
     def insert(self):
         sql = text("""INSERT INTO messages (thread, sender, text, sent_time) VALUES (:thread, :sender, :text, :sent_time)""")
@@ -46,6 +46,15 @@ class Area:
         count = result.fetchone()
         self.message_count = count[0]
         return count
+    
+    def query_last_message(self):
+        sql = text("""SELECT MAX(m.sent_time) FROM messages m WHERE m.thread in (SELECT t.id FROM threads t WHERE t.area = :area_id)""")
+        result = app.db.session.execute(sql, {"area_id" : self.id})
+        last = result.fetchone()
+        if last[0] != None:
+            self.last_message = datetime.strftime(last[0], "%d.%m.%Y %H:%M")
+        return last
+        
 
     def insert(self):
         sql = text("""INSERT INTO areas (topic) VALUES (:topic)""")
