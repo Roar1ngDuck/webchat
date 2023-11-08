@@ -22,3 +22,14 @@ def index():
     # area.insert()
 
     return render_template("index.html", areas=helpers.get_areas())
+
+@app.route("/area/<int:area_id>")
+def view_area(area_id):
+    area = Area.create_from_db(area_id)
+    threads = area.query_threads()
+
+    return render_template("area.html", threads=threads)
+
+@app.route("/thread/<int:thread_id>")
+def view_thread(thread_id):
+    pass

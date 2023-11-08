@@ -31,5 +31,18 @@ main {
 .discussion-area {
     border: 1px solid #e8e6e3;
     padding: 1rem;
+}
+
+.discussion-area-link {
+    color: inherit; /* Ensures that links have the same color as h2 elements */
+    text-decoration: none; /* Removes the underline from links */
     width: calc(33% - 1rem);
+}
+
+a.discussion-area {
+    text-decoration: none; /* No underlines */
+    color: inherit; /* Inherits text color from parent element */
+    display: block; /* Or inline-block, depending on your layout needs */
+    padding: 0; /* No additional padding */
+    margin: 0; /* No additional margin */
 }

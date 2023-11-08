@@ -19,19 +19,51 @@ class Message:
         app.db.session.commit()
 
 class Thread:
-    def __init__(self, area:int, title:str):
-        self.area = area
-        self.title = title
-
+    @classmethod
+    def create_from_sql_result(cls, sql_result):
+        instance = cls()
+        instance.id = sql_result[0]
+        instance.area = sql_result[1]
+        instance.title = sql_result[2]
+        return instance
+    
+    def query_message_count(self):
+        sql = text("""SELECT COUNT(*) FROM messages m WHERE m.thread = :thread_id""")
+        result = app.db.session.execute(sql, {"thread_id" : self.id})
+        count = result.fetchone()
+        self.message_count = count[0]
+        return count
+    
+    def query_last_message(self):
+        sql = text("""SELECT MAX(m.sent_time) FROM messages m WHERE m.thread = :thread_id""")
+        result = app.db.session.execute(sql, {"thread_id" : self.id})
+        last = result.fetchone()
+        if last[0] != None:
+            self.last_message = datetime.strftime(last[0], "%d.%m.%Y %H:%M")
+        return last
+    
     def insert(self):
         sql = text("""INSERT INTO threads (area, title) VALUES (:area, :title)""")
         app.db.session.execute(sql, {"area" : self.area, "title" : self.title})
         app.db.session.commit()
 
 class Area:
-    def __init__(self, topic:str, id=0):
-        self.topic = topic
-        self.id = id
+    @classmethod
+    def create_from_sql_result(cls, sql_result):
+        instance = cls()
+        instance.id = sql_result[0]
+        instance.topic = sql_result[1]
+        return instance
+    
+    @classmethod
+    def create_from_db(cls, id):
+        sql = text("""SELECT a.topic FROM areas a WHERE a.id = :area_id""")
+        result = app.db.session.execute(sql, {"area_id" : id})
+        topic = result.fetchone()[0]
+        instance = cls()
+        instance.topic = topic
+        instance.id = id
+        return instance
 
     def query_thread_count(self):
         sql = text("""SELECT COUNT(*) FROM threads t WHERE t.area = :area_id""")
@@ -55,6 +87,17 @@ class Area:
             self.last_message = datetime.strftime(last[0], "%d.%m.%Y %H:%M")
         return last
         
+    def query_threads(self):
+        sql = text("""SELECT * FROM threads t WHERE t.area = :area_id""")
+        result = app.db.session.execute(sql, {"area_id" : self.id})
+        thread_results = result.fetchall()
+        self.threads:list[Thread] = []
+        for thread_result in thread_results:
+            thread = Thread.create_from_sql_result(thread_result)
+            thread.query_message_count()
+            thread.query_last_message()
+            self.threads.append(thread)
+        return self.threads
 
     def insert(self):
         sql = text("""INSERT INTO areas (topic) VALUES (:topic)""")

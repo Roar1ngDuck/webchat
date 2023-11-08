@@ -12,7 +12,7 @@ def get_areas():
     areas:list[Area] = []
 
     for result in app.db.session.execute(sql).fetchall():
-        area = Area(result[1], result[0])
+        area = Area.create_from_sql_result(result)
         area.query_thread_count()
         area.query_message_count()
         area.query_last_message()
