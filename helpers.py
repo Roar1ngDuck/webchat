@@ -8,6 +8,7 @@ from sqlalchemy import text
 import random
 import models
 import bcrypt
+from zxcvbn import zxcvbn
 
 def create_test_data():
     for i in range(10):
@@ -77,3 +78,11 @@ def check_password(hashed_password, user_password):
         return True
     else:
         return False
+    
+def is_password_secure(password):
+    strength = zxcvbn(password)
+
+    if strength["score"] >= 3:
+        return True
+    
+    return False

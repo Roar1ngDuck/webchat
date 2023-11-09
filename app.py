@@ -61,10 +61,10 @@ def register():
     if request.method == "POST":
         if helpers.username_exists(request.form["username"]):
             return render_template("register.html", error="Username taken")
+        if helpers.is_password_secure(request.form["password"]) == False:
+            return render_template("register.html", error="Password is too weak")   
         if request.form["password"] != request.form["confirm_password"]:
             return render_template("register.html", error="Passwords don't match")
-    
-        # TODO: Check password strength
 
         user = User.create(request.form["username"], request.form["password"])
         user.insert()
