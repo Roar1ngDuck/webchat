@@ -5,21 +5,23 @@ WebChat
 {% endblock %}
 
 {% block content %}
-<section id="message-list">
-    {% for message in thread.messages %}
-    <article class="message">
-        <header>
-            <time>{{ message.sent_time }}</time>
-            <strong>{{ message.sender }}</strong>
-        </header>
-        <p>{{ message.text }}</p>
-    </article>
-    {% else %}
-    <p>No messages yet.</p>
-    {% endfor %}
-</section>
-<form action="{{ url_for('view_thread', thread_id=thread.id) }}" method="post" id="message-form">
-    <textarea name="message" rows="5" required></textarea>
-    <button type="submit">Send</button>
-</form>
+<div class="chat-container">
+    <section id="message-list">
+        {% for message in thread.messages %}
+        <article class="message">
+            <header>
+                <time>{{ message.sent_time }}</time>
+                <strong>{{ message.sender }}</strong>
+            </header>
+            <p>{{ message.text }}</p>
+        </article>
+        {% else %}
+        <p>No messages yet.</p>
+        {% endfor %}
+    </section>
+    <form action="{{ url_for('view_thread', thread_id=thread.id) }}" method="post" id="message-form">
+        <textarea name="message" rows="5" required></textarea>
+        <button type="submit">Send</button>
+    </form>
+</div>
 {% endblock %}

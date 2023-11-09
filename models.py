@@ -46,7 +46,7 @@ class Thread:
     def create_from_db(cls, id):
         instance = cls()
         instance.id = id
-        sql = text("""SELECT * FROM messages m WHERE m.thread = :thread_id""")
+        sql = text("""SELECT M.id, M.thread, U.username, M.text, M.sent_time FROM messages M JOIN users U ON M.sender = U.id WHERE M.thread = :thread_id""")
         result = app.db.session.execute(sql, {"thread_id" : id})
         message_results = result.fetchall()
         instance.messages:list[Thread] = []
