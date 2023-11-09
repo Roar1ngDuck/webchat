@@ -6,6 +6,7 @@ import os
 import app
 from sqlalchemy import text
 from models import *
+import random
 
 def get_areas():
     sql = text("""SELECT * FROM areas""")
@@ -19,3 +20,22 @@ def get_areas():
         areas.append(area)
 
     return areas
+
+def verify_login(request):
+    username = request.form["username"]
+    password = request.form["password"]
+    if username == "test" and password == "test":
+        return 0
+    return None
+    
+
+def create_test_data():
+    for i in range(10):
+        msg = Message.create(random.randint(0, 3), random.randint(0, 3), "Test message hello!")
+        msg.insert()
+
+        thread = Thread.create(random.randint(0, 3), f"Test thread {i}")
+        thread.insert()
+
+        area = Area.create(f"Test topic {i}")
+        area.insert()

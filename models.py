@@ -16,6 +16,15 @@ class Message:
         instance.text = sql_result[3]
         instance.sent_time = datetime.strftime(sql_result[4], "%d.%m.%Y %H:%M")
         return instance
+    
+    @classmethod
+    def create(cls, thread, sender, text):
+        instance = cls()
+        instance.thread = thread
+        instance.sender = sender
+        instance.text = text
+        instance.sent_time = datetime.now()
+        return instance
 
     def insert(self):
         sql = text("""INSERT INTO messages (thread, sender, text, sent_time) VALUES (:thread, :sender, :text, :sent_time)""")
@@ -44,6 +53,12 @@ class Thread:
             instance.messages.append(message)
         return instance
 
+    @classmethod
+    def create(cls, area, title):
+        instance = cls()
+        instance.area = area
+        instance.title = title
+        return instance
     
     def query_message_count(self):
         sql = text("""SELECT COUNT(*) FROM messages m WHERE m.thread = :thread_id""")
@@ -81,6 +96,12 @@ class Area:
         instance = cls()
         instance.topic = topic
         instance.id = id
+        return instance
+    
+    @classmethod
+    def create(cls, topic):
+        instance = cls()
+        instance.topic = topic
         return instance
 
     def query_thread_count(self):
