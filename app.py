@@ -60,8 +60,13 @@ def register():
             return render_template("register.html", error="Passwords don't match")
     
         # TODO: Check password strength
-        
+
         user = User.create(request.form["username"], request.form["password"])
         user.insert()
 
         return redirect("/login")
+    
+@app.route("/logout")
+def logout():
+    session.pop("user_id")
+    return redirect("/")
