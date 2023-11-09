@@ -36,6 +36,15 @@ def get_areas():
 
     return areas
 
+def username_exists(username):
+    sql = text("""SELECT COUNT(*) FROM users u WHERE u.username = :username""")
+    result = app.db.session.execute(sql, {"username" : username})
+    fetched = result.fetchone()[0]
+    if fetched == 0:
+        return False
+
+    return True
+
 def verify_login(request):
     username = request.form["username"]
     sql = text("""SELECT u.id, u.password FROM users u WHERE u.username = :username""")

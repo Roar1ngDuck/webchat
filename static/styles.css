@@ -91,7 +91,7 @@ a.discussion-area {
     text-align: center; /* Center the text if no messages */
 }
 
-.login-container {
+.login-container, .register-container {
     max-width: 400px;
     margin: 2rem auto;
     padding: 1rem;
@@ -132,8 +132,23 @@ a.discussion-area {
     background-color: #394245;
 }
 
-.login-error {
+.login-error, .register-error {
     color: #e74c3c;
     margin-bottom: 1rem;
     text-align: center;
+}
+
+.login-link, .register-link {
+    color: #e8e6e3;
+    text-align: center;
+    margin-top: 1rem;
+}
+
+.login-link a, .register-link a {
+    color: #9ec3ff;
+    text-decoration: none;
+}
+
+.login-link a:hover, .register-link a:hover {
+    text-decoration: underline;
 }

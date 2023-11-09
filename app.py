@@ -48,3 +48,20 @@ def login():
             return render_template("login.html", error=True)
         session["user_id"] = user_id
         return redirect("/")
+    
+@app.route("/register", methods=['GET', 'POST'])
+def register():
+    if request.method == "GET":
+        return render_template("register.html")
+    if request.method == "POST":
+        if helpers.username_exists(request.form["username"]):
+            return render_template("register.html", error="Username taken")
+        if request.form["password"] != request.form["confirm_password"]:
+            return render_template("register.html", error="Passwords don't match")
+    
+        # TODO: Check password strength
+        
+        user = User.create(request.form["username"], request.form["password"])
+        user.insert()
+
+        return redirect("/login")
