@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 
 {% block title %}
-WebChat
+<h1>WebChat - Threads</h1> <div class="header-small">{{ area.topic }}</div>
 {% endblock %}
 
 {% block content %}
 <section class="discussion-areas">
-    {% for thread in threads %}
+    {% for thread in area.threads %}
     <a href="{{ url_for('view_thread', thread_id=thread.id) }}" class="discussion-area-link">
         <article class="discussion-area">
             <h2>{{ thread.title }}</h2>

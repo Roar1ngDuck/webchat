@@ -22,6 +22,17 @@ header {
     padding: 1rem;
 }
 
+.header-container {
+    display: flex;
+}
+
+.header-small {
+    margin-top: 1rem;
+    margin-left: 1rem;
+    font-size: 1.2rem;
+    color: rgb(128, 114, 228);
+}
+
 /* Main content area styling: padding */
 main {
     padding: 1rem;

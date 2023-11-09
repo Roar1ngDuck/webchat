@@ -46,9 +46,10 @@ class Thread:
     def create_from_db(cls, id):
         instance = cls()
         instance.id = id
-        sql = text("""SELECT M.id, M.thread, U.username, M.text, M.sent_time FROM messages M JOIN users U ON M.sender = U.id WHERE M.thread = :thread_id""")
+        sql = text("""SELECT M.id, T.title, U.username, M.text, M.sent_time FROM messages M JOIN users U ON M.sender = U.id JOIN threads T ON M.thread = T.id WHERE M.thread = :thread_id""")
         result = app.db.session.execute(sql, {"thread_id" : id})
         message_results = result.fetchall()
+        instance.title = message_results[0][1]
         instance.messages:list[Thread] = []
         for message_result in message_results:
             message = Message.create_from_sql_result(message_result)
@@ -139,7 +140,7 @@ class Area:
             thread.query_last_message()
             self.threads.append(thread)
         return self.threads
-
+    
     def insert(self):
         sql = text("""INSERT INTO areas (topic) VALUES (:topic)""")
         app.db.session.execute(sql, {"topic" : self.topic})

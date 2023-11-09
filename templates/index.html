@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block title %}
-WebChat
+<h1>WebChat - Areas</h1>
 {% endblock %}
 
 {% block content %}
@@ -12,7 +12,7 @@ WebChat
             <h2>{{ area.topic }}</h2>
             <p>Threads: <span class="thread-count">{{ area.thread_count }}</span></p>
             <p>Messages: <span class="message-count">{{ area.message_count }}</span></p>
-            <p>Last Message: <time class="last-message">{{ area.last_message }}</time></p>
+            <p>Last: <time class="last-message">{{ area.last_message }}</time></p>
         </article>
     </a>
     {% endfor %}
