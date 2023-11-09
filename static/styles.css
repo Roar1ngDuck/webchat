@@ -3,6 +3,7 @@
 * {
     margin: 0;
     box-sizing: border-box;
+    font-family: 'Source Code Pro', monospace;
 }
 
 /* Root Element Styles */
@@ -32,6 +33,7 @@ main {
     flex-wrap: wrap;
     gap: 1rem;
     justify-content: center;
+    margin: 0 15% 0 15%;
 }
 
 /* Single discussion area style: border, padding, and responsive width */
@@ -50,6 +52,9 @@ main {
 @media (max-width: 767px) {
     .discussion-area-link {
       width: 100%; /* Makes each discussion area link full width on mobile devices */
+    }
+    .discussion-areas {
+        margin: auto;
     }
   }
 
@@ -226,6 +231,12 @@ main {
     flex-direction: column;
     height: calc(100vh - 9rem); /* Adjusts the container to fill the height of the viewport minus the combined height of header and other elements */
 }
+
+@media (max-width: 767px) {
+    .chat-container {
+        height: calc(100vh - 14rem); /* Adjusts the container to fill the height of the viewport minus the combined height of header and other elements */
+    }
+  }
 
 /* Password Strength Meter Styles */
 .password-strength-label {

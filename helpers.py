@@ -82,7 +82,31 @@ def check_password(hashed_password, user_password):
 def is_password_secure(password):
     strength = zxcvbn(password)
 
-    if strength["score"] >= 3:
+    if strength["score"] >= 4:
         return True
     
     return False
+
+def time_ago(date):
+    now = datetime.now()
+    diff = now - date
+
+    seconds = diff.total_seconds()
+    minutes = seconds / 60
+    hours = minutes / 60
+    days = diff.days
+    months = days / 30.44  # Average days per month
+    years = days / 365.25  # Average days per year
+
+    if seconds < 60:
+        return f"{int(seconds)} seconds ago"
+    elif minutes < 60:
+        return f"{int(minutes)} minutes ago"
+    elif hours < 24:
+        return f"{int(hours)} hours ago"
+    elif days < 30:
+        return f"{int(days)} days ago"
+    elif days < 365:
+        return f"{int(months)} months ago"
+    else:
+        return f"{int(years)} years ago"

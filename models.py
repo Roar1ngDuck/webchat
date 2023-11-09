@@ -74,7 +74,7 @@ class Thread:
         result = app.db.session.execute(sql, {"thread_id" : self.id})
         last = result.fetchone()
         if last[0] != None:
-            self.last_message = datetime.strftime(last[0], "%d.%m.%Y %H:%M")
+            self.last_message = helpers.time_ago(last[0])
         return last
     
     def insert(self):
@@ -125,7 +125,7 @@ class Area:
         result = app.db.session.execute(sql, {"area_id" : self.id})
         last = result.fetchone()
         if last[0] != None:
-            self.last_message = datetime.strftime(last[0], "%d.%m.%Y %H:%M")
+            self.last_message = helpers.time_ago(last[0])
         return last
         
     def query_threads(self):
