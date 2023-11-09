@@ -47,6 +47,7 @@ def login():
         if user_id == None:
             return render_template("login.html", error=True)
         session["user_id"] = user_id
+        session["username"] = request.form["username"]
         return redirect("/")
     
 @app.route("/register", methods=['GET', 'POST'])

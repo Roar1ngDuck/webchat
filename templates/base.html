@@ -10,6 +10,7 @@
     <header>
         <h1>WebChat</h1>
         {% if "user_id" in session %}
+            <span class="username-display">Logged in as <span class="username-highlight">{{ session["username"] }}</span></span>
             <a href="{{ url_for('logout') }}" class="logout-button">Logout</a>
         {% endif %}
     </header>
