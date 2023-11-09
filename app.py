@@ -29,14 +29,18 @@ def view_area(area_id):
 
     return render_template("area.html", threads=threads)
 
-@app.route("/thread/<int:thread_id>")
+@app.route("/thread/<int:thread_id>", methods=['GET', 'POST'])
 def view_thread(thread_id):
     if "user_id" not in session:
         return redirect("/login")
 
-    thread = Thread.create_from_db(thread_id)
+    if request.method == "POST":
+        message = Message.create(thread_id, session["user_id"], request.form["message"])
+        message.insert()
 
-    return render_template("thread.html", messages=thread.messages)
+    thread = Thread.create_from_db(thread_id)
+    return render_template("thread.html", thread=thread)
+    
 
 @app.route("/login", methods=['GET', 'POST'])
 def login():
