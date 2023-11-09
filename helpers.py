@@ -5,15 +5,30 @@ from datetime import datetime
 import os
 import app
 from sqlalchemy import text
-from models import *
 import random
+import models
+import bcrypt
+
+def create_test_data():
+    for i in range(10):
+        msg = models.Message.create(random.randint(0, 3), random.randint(0, 3), "Test message hello!")
+        msg.insert()
+
+        thread = models.Thread.create(random.randint(0, 3), f"Test thread {i}")
+        thread.insert()
+
+        area = models.Area.create(f"Test topic {i}")
+        area.insert()
+
+    user = models.User.create("test", "test")
+    user.insert()
 
 def get_areas():
     sql = text("""SELECT * FROM areas""")
-    areas:list[Area] = []
+    areas:list[models.Area] = []
 
     for result in app.db.session.execute(sql).fetchall():
-        area = Area.create_from_sql_result(result)
+        area = models.Area.create_from_sql_result(result)
         area.query_thread_count()
         area.query_message_count()
         area.query_last_message()
@@ -23,19 +38,33 @@ def get_areas():
 
 def verify_login(request):
     username = request.form["username"]
-    password = request.form["password"]
-    if username == "test" and password == "test":
-        return 0
+    sql = text("""SELECT u.id, u.password FROM users u WHERE u.username = :username""")
+    result = app.db.session.execute(sql, {"username" : username})
+    fetched = result.fetchone()
+
+    if fetched == None:
+        return None
+
+    id = fetched[0]
+    password_hash = fetched[1].tobytes()
+
+    if check_password(password_hash, request.form["password"]):
+        return id
+
     return None
-    
 
-def create_test_data():
-    for i in range(10):
-        msg = Message.create(random.randint(0, 3), random.randint(0, 3), "Test message hello!")
-        msg.insert()
+def hash_password(password):
+    password_bytes = password.encode('utf-8')
 
-        thread = Thread.create(random.randint(0, 3), f"Test thread {i}")
-        thread.insert()
+    salt = bcrypt.gensalt()
+    hashed_password = bcrypt.hashpw(password_bytes, salt)
 
-        area = Area.create(f"Test topic {i}")
-        area.insert()
+    return hashed_password
+
+def check_password(hashed_password, user_password):
+    password_bytes = user_password.encode('utf-8')
+
+    if bcrypt.checkpw(password_bytes, hashed_password):
+        return True
+    else:
+        return False

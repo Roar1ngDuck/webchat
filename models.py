@@ -5,6 +5,8 @@ from datetime import datetime
 import os
 import app
 from sqlalchemy import text
+import bcrypt
+import helpers
 
 class Message:
     @classmethod
@@ -141,4 +143,17 @@ class Area:
     def insert(self):
         sql = text("""INSERT INTO areas (topic) VALUES (:topic)""")
         app.db.session.execute(sql, {"topic" : self.topic})
+        app.db.session.commit()
+
+class User:
+    @classmethod
+    def create(cls, username, password):
+        instance = cls()
+        instance.username = username
+        instance.password = helpers.hash_password(password)
+        return instance
+
+    def insert(self):
+        sql = text("""INSERT INTO users (username, password) VALUES (:username, :password)""")
+        app.db.session.execute(sql, {"username" : self.username, "password" : self.password})
         app.db.session.commit()
