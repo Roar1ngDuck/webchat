@@ -17,6 +17,10 @@ WebChat
         <div class="form-group">
             <label for="password">Password</label>
             <input type="password" id="password" name="password" required>
+            <label for="password-strength-meter" class="password-strength-label">Password Strength</label>
+            <div id="password-strength-meter" class="password-strength-meter">
+                <div id="password-strength-meter-bar" class="password-strength-meter-bar"></div>
+            </div>
         </div>
         <div class="form-group">
             <label for="confirm-password">Confirm Password</label>
@@ -30,4 +34,34 @@ WebChat
         Already have an account? <a href="/login">Login here</a>.
     </p>
 </div>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var passwordInput = document.getElementById('password');
+        var meterBar = document.getElementById('password-strength-meter-bar');
+    
+        passwordInput.addEventListener('input', function () {
+            var val = passwordInput.value;
+            var result = zxcvbn(val);
+    
+            meterBar.className = ''; // Clear all classes
+            switch (result.score) {
+                case 0:
+                    meterBar.classList.add('strength-none');
+                    break;
+                case 1:
+                    meterBar.classList.add('strength-weak');
+                    break;
+                case 2:
+                    meterBar.classList.add('strength-fair');
+                    break;
+                case 3:
+                    meterBar.classList.add('strength-good');
+                    break;
+                case 4:
+                    meterBar.classList.add('strength-strong');
+                    break;
+            }
+        });
+    });
+    </script>
 {% endblock %}

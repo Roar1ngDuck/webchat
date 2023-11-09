@@ -47,6 +47,12 @@ main {
     width: calc(33% - 1rem);
 }
 
+@media (max-width: 767px) {
+    .discussion-area-link {
+      width: 100%; /* Makes each discussion area link full width on mobile devices */
+    }
+  }
+
 /* Message list style: allows for vertical scrolling if content overflows */
 #message-list {
     overflow-y: auto; /* Add scroll for overflow */
@@ -219,4 +225,55 @@ main {
     display: flex;
     flex-direction: column;
     height: calc(100vh - 9rem); /* Adjusts the container to fill the height of the viewport minus the combined height of header and other elements */
+}
+
+/* Password Strength Meter Styles */
+.password-strength-label {
+    display: block;
+    margin-top: 1rem; /* Space above the label */
+    font-size: 0.8rem; /* Smaller font size for subtlety */
+    color: #9e9e9e; /* A lighter grey that stands out on the dark background */
+    text-transform: uppercase; /* Uppercase text for stylistic preference */
+    font-weight: bold; /* Bold text to make it stand out */
+}
+
+.password-strength-meter {
+    height: 1rem; /* Set the height of the meter */
+    background-color: #3a3b3c; /* A neutral, dark background color for the meter */
+    margin-top: 0.5rem; /* Space between the password field and the meter */
+    position: relative;
+}
+
+#password-strength-meter-bar {
+    height: 100%;
+    transition: width 0.3s ease-in-out; /* Smooth transition for width changes */
+    position: absolute;
+    left: 0;
+    top: 0;
+}
+
+/* Different strength levels */
+.strength-none {
+    width: 0%; /* No strength: 0% width */
+}
+
+/* Different strength levels */
+.strength-weak {
+    width: 25%; /* Weak strength: 25% width */
+    background-color: #e74c3c; /* Weak strength: red color */
+}
+
+.strength-fair {
+    width: 50%; /* Fair strength: 50% width */
+    background-color: #f39c12; /* Fair strength: orange color */
+}
+
+.strength-good {
+    width: 75%; /* Good strength: 75% width */
+    background-color: #f1c40f; /* Good strength: yellow color */
+}
+
+.strength-strong {
+    width: 100%; /* Strong strength: 100% width */
+    background-color: #27ae60; /* Strong strength: green color */
 }
