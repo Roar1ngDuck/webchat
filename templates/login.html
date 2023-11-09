@@ -1,38 +1,30 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WebChat</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-</head>
-<body>
-    <header>
-        <h1>WebChat</h1>
-    </header>
-    <main>
-        <div class="login-container">
-            {% if error %}
-                <p class="login-error">Incorrect username or password.</p>
-            {% endif %}
-            <form action="/login" method="post">
-                <div class="form-group">
-                    <label for="username">Username</label>
-                    <input type="text" id="username" name="username" required>
-                </div>
-                <div class="form-group">
-                    <label for="password">Password</label>
-                    <input type="password" id="password" name="password" required>
-                </div>
-                <div class="form-group">
-                    <button type="submit">Login</button>
-                </div>
-            </form>
-             <!-- Registration Link -->
-             <p class="register-link">
-                Don't have an account? <a href="/register">Register here</a>.
-            </p>
+{% extends "base.html" %}
+
+{% block title %}
+WebChat
+{% endblock %}
+
+{% block content %}
+<div class="login-container">
+    {% if error %}
+        <p class="login-error">Incorrect username or password.</p>
+    {% endif %}
+    <form action="/login" method="post">
+        <div class="form-group">
+            <label for="username">Username</label>
+            <input type="text" id="username" name="username" required>
         </div>
-    </main>
-</body>
-</html>
+        <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" required>
+        </div>
+        <div class="form-group">
+            <button type="submit">Login</button>
+        </div>
+    </form>
+     <!-- Registration Link -->
+     <p class="register-link">
+        Don't have an account? <a href="/register">Register here</a>.
+    </p>
+</div>
+{% endblock %}

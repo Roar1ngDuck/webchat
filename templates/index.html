@@ -1,29 +1,20 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WebChat</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-</head>
-<body>
-    <header>
-        <h1>WebChat</h1>
-        <a href="{{ url_for('logout') }}" class="logout-button">Logout</a>
-    </header>
-    <main>
-        <section class="discussion-areas">
-            {% for area in areas %}
-            <a href="{{ url_for('view_area', area_id=area.id) }}" class="discussion-area-link">
-                <article class="discussion-area">
-                    <h2>{{ area.topic }}</h2>
-                    <p>Threads: <span class="thread-count">{{ area.thread_count }}</span></p>
-                    <p>Messages: <span class="message-count">{{ area.message_count }}</span></p>
-                    <p>Last Message: <time class="last-message">{{ area.last_message }}</time></p>
-                </article>
-            </a>
-            {% endfor %}
-        </section>
-    </main>
-</body>
-</html>
+{% extends "base.html" %}
+
+{% block title %}
+WebChat
+{% endblock %}
+
+{% block content %}
+<section class="discussion-areas">
+    {% for area in areas %}
+    <a href="{{ url_for('view_area', area_id=area.id) }}" class="discussion-area-link">
+        <article class="discussion-area">
+            <h2>{{ area.topic }}</h2>
+            <p>Threads: <span class="thread-count">{{ area.thread_count }}</span></p>
+            <p>Messages: <span class="message-count">{{ area.message_count }}</span></p>
+            <p>Last Message: <time class="last-message">{{ area.last_message }}</time></p>
+        </article>
+    </a>
+    {% endfor %}
+</section>
+{% endblock %}
