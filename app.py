@@ -3,19 +3,62 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import text
 from datetime import datetime
 import os
-from models import *
 import helpers
 from os import getenv
+from faker import Faker
+import random
+from models import Area, Thread, Message, User
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:postgres@localhost/webchat'
 app.secret_key = getenv("SECRET_KEY")
 db = SQLAlchemy(app)
 
+@app.route("/generate")
+def generate_test_data():
+    fake = Faker()
+
+    # Create some users
+    users = []
+    for i in range(10):
+        username = fake.user_name()
+        password = fake.password(length=10, special_chars=True, digits=True, upper_case=True, lower_case=True)
+        user = User.create(username, password)
+        user.insert()
+        users.append(user)
+
+    # Create some areas
+    areas = []
+    for i in range(5):
+        topic = fake.unique.word().title()
+        area = Area.create(topic)
+        area.insert()
+        areas.append(area)
+
+    # Create some threads within those areas
+    threads = []
+    for i in range(10):
+        area_index = random.randint(0, len(areas) - 1)
+        title = fake.sentence(nb_words=6).rstrip('.')
+        thread = Thread.create(area_index, title)
+        thread.insert()
+        threads.append(thread)
+
+    # Create some messages within those threads
+    for i in range(len(threads)):
+        for _ in range(random.randint(5, 15)):
+            thread_index = i
+            sender_index = random.randint(0, len(users) - 1)
+            msg = Message.create(thread_index, sender_index, fake.paragraph(nb_sentences=3))
+            msg.insert()
+    
+
 @app.route("/")
 def index():
     if "user_id" not in session:
         return redirect("/login")
+    
+    # TODO: List recently active threads on the right side of the flex box, only on desktop.
 
     return render_template("index.html", areas=helpers.get_areas())
 
@@ -25,9 +68,10 @@ def view_area(area_id):
         return redirect("/login")
 
     area = Area.create_from_db(area_id)
-    threads = area.query_threads()
 
-    return render_template("area.html", threads=threads)
+    # TODO: List recent messages on the right side of the flex box, only on desktop.
+
+    return render_template("area.html", area=area)
 
 @app.route("/thread/<int:thread_id>", methods=['GET', 'POST'])
 def view_thread(thread_id):
