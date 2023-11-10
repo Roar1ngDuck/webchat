@@ -37,20 +37,22 @@ def generate_test_data():
 
     # Create some threads within those areas
     threads = []
-    for i in range(10):
-        area_index = random.randint(0, len(areas) - 1)
+    for i in range(20):
+        area_index = random.randint(1, len(areas))
         title = fake.sentence(nb_words=6).rstrip('.')
         thread = Thread.create(area_index, title)
         thread.insert()
         threads.append(thread)
 
     # Create some messages within those threads
-    for i in range(len(threads)):
+    for i in range(1, len(threads)):
         for _ in range(random.randint(5, 15)):
             thread_index = i
             sender_index = random.randint(0, len(users) - 1)
             msg = Message.create(thread_index, sender_index, fake.paragraph(nb_sentences=3))
             msg.insert()
+
+    return redirect("/")
     
 
 @app.route("/", methods=['GET', 'POST'])
