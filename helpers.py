@@ -30,9 +30,6 @@ def get_areas():
 
     for result in app.db.session.execute(sql).fetchall():
         area = models.Area.create_from_sql_result(result)
-        area.query_thread_count()
-        area.query_message_count()
-        area.query_last_message()
         areas.append(area)
 
     return areas

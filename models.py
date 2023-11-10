@@ -63,20 +63,18 @@ class Thread:
         instance.title = title
         return instance
     
-    def query_message_count(self):
+    @property
+    def message_count(self):
         sql = text("""SELECT COUNT(*) FROM messages m WHERE m.thread = :thread_id""")
-        result = app.db.session.execute(sql, {"thread_id" : self.id})
-        count = result.fetchone()
-        self.message_count = count[0]
-        return count
+        return app.db.session.execute(sql, {"thread_id" : self.id}).fetchone()[0]
     
-    def query_last_message(self):
+    @property
+    def last_message(self):
         sql = text("""SELECT MAX(m.sent_time) FROM messages m WHERE m.thread = :thread_id""")
-        result = app.db.session.execute(sql, {"thread_id" : self.id})
-        last = result.fetchone()
-        if last[0] != None:
-            self.last_message = helpers.time_ago(last[0])
-        return last
+        result = app.db.session.execute(sql, {"thread_id" : self.id}).fetchone()[0]
+        if result != None:
+            self.last_message = helpers.time_ago(result)
+        return result
     
     def insert(self):
         sql = text("""INSERT INTO threads (area, title) VALUES (:area, :title)""")
@@ -107,39 +105,33 @@ class Area:
         instance.topic = topic
         return instance
 
-    def query_thread_count(self):
+    @property
+    def thread_count(self):
         sql = text("""SELECT COUNT(*) FROM threads t WHERE t.area = :area_id""")
-        result = app.db.session.execute(sql, {"area_id" : self.id})
-        count = result.fetchone()
-        self.thread_count = count[0]
-        return count
+        return app.db.session.execute(sql, {"area_id" : self.id}).fetchone()[0]
     
-    def query_message_count(self):
+    @property
+    def message_count(self):
         sql = text("""SELECT COUNT(*) FROM messages m WHERE m.thread in (SELECT t.id FROM threads t WHERE t.area = :area_id)""")
-        result = app.db.session.execute(sql, {"area_id" : self.id})
-        count = result.fetchone()
-        self.message_count = count[0]
-        return count
+        return app.db.session.execute(sql, {"area_id" : self.id}).fetchone()[0]
     
-    def query_last_message(self):
+    @property
+    def last_message(self):
         sql = text("""SELECT MAX(m.sent_time) FROM messages m WHERE m.thread in (SELECT t.id FROM threads t WHERE t.area = :area_id)""")
-        result = app.db.session.execute(sql, {"area_id" : self.id})
-        last = result.fetchone()
-        if last[0] != None:
-            self.last_message = helpers.time_ago(last[0])
-        return last
+        result = app.db.session.execute(sql, {"area_id" : self.id}).fetchone()[0]
+        if result != None:
+            return helpers.time_ago(result)
+        return None
         
-    def query_threads(self):
+    @property
+    def threads(self):
         sql = text("""SELECT * FROM threads t WHERE t.area = :area_id""")
-        result = app.db.session.execute(sql, {"area_id" : self.id})
-        thread_results = result.fetchall()
-        self.threads:list[Thread] = []
-        for thread_result in thread_results:
+        result = app.db.session.execute(sql, {"area_id" : self.id}).fetchall()
+        threads:list[Thread] = []
+        for thread_result in result:
             thread = Thread.create_from_sql_result(thread_result)
-            thread.query_message_count()
-            thread.query_last_message()
-            self.threads.append(thread)
-        return self.threads
+            threads.append(thread)
+        return threads
     
     def insert(self):
         sql = text("""INSERT INTO areas (topic) VALUES (:topic)""")
