@@ -24,4 +24,10 @@
         <button type="submit">Send</button>
     </form>
 </div>
+<script>
+    document.addEventListener('DOMContentLoaded', (event) => {
+        var messageList = document.getElementById("message-list");
+        messageList.scrollTop = messageList.scrollHeight;
+    });
+</script>
 {% endblock %}
