@@ -53,16 +53,20 @@ def generate_test_data():
             msg.insert()
     
 
-@app.route("/")
+@app.route("/", methods=['GET', 'POST'])
 def index():
     if "user_id" not in session:
         return redirect("/login")
     
     # TODO: List recently active threads on the right side of the flex box, only on desktop.
 
+    if request.method == "POST":
+        area = Area.create(request.form["topic"])
+        area.insert()
+
     return render_template("index.html", areas=helpers.get_areas())
 
-@app.route("/area/<int:area_id>")
+@app.route("/area/<int:area_id>", methods=['GET', 'POST'])
 def view_area(area_id):
     if "user_id" not in session:
         return redirect("/login")
@@ -70,6 +74,13 @@ def view_area(area_id):
     area = Area.create_from_db(area_id)
 
     # TODO: List recent messages on the right side of the flex box, only on desktop.
+
+    if request.method == "POST":
+        thread = Thread.create(area_id, request.form["title"])
+        thread.insert()
+
+        message = Message.create(thread.id, session["user_id"], request.form["message"])
+        message.insert()
 
     return render_template("area.html", area=area)
 

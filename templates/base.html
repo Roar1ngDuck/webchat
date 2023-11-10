@@ -16,10 +16,12 @@
         {% if "user_id" in session %}
             <span class="username-display">Logged in as <span class="username-highlight">{{ session["username"] }}</span></span>
             <a href="{{ url_for('logout') }}" class="logout-button">Logout</a>
+            {% block navbar %}{% endblock %}
         {% endif %}
     </header>
     <main>
         {% block content %}{% endblock %}
     </main>
+    <!-- Modal Structure -->
 </body>
 </html>

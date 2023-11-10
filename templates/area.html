@@ -4,6 +4,11 @@
 <h1>WebChat - Threads</h1> <div class="header-small">{{ area.topic }}</div>
 {% endblock %}
 
+{% block navbar %}
+<!-- Add Thread Button -->
+<button id="createAreaBtn" class="modern-button">New Thread</button>
+{% endblock %}
+
 {% block content %}
 <section class="discussion-areas">
     {% for thread in area.threads %}
@@ -16,4 +21,46 @@
     </a>
     {% endfor %}
 </section>
+<div id="createAreaModal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn">&times;</span>
+        <form action="{{ url_for('view_area', area_id=area.id) }}" method="post" id="createAreaForm">
+            <h2>Create New Thread</h2>
+            <div class="form-group">
+                <label for="topicName">Title</label>
+                <input type="text" id="topicName" name="title" required>
+                <label for="message">First message</label>
+                <textarea name="message" rows="5" required></textarea>
+            </div>
+            <button type="submit" class="modern-button">Create</button>
+        </form>
+    </div>
+</div>
+<script>
+    // Get the modal
+    var modal = document.getElementById("createAreaModal");
+
+    // Get the button that opens the modal
+    var btn = document.getElementById("createAreaBtn");
+
+    // Get the <span> element that closes the modal
+    var span = document.getElementsByClassName("close-btn")[0];
+
+    // When the user clicks the button, open the modal 
+    btn.onclick = function() {
+        modal.style.display = "block";
+    }
+
+    // When the user clicks on <span> (x), close the modal
+    span.onclick = function() {
+        modal.style.display = "none";
+    }
+
+    // When the user clicks anywhere outside of the modal, close it
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    }
+</script>
 {% endblock %}

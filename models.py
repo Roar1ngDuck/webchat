@@ -29,9 +29,10 @@ class Message:
         return instance
 
     def insert(self):
-        sql = text("""INSERT INTO messages (thread, sender, text, sent_time) VALUES (:thread, :sender, :text, :sent_time)""")
-        app.db.session.execute(sql, {"thread" : self.thread, "sender" : self.sender, "text" : self.text, "sent_time" : self.sent_time})
+        sql = text("""INSERT INTO messages (thread, sender, text, sent_time) VALUES (:thread, :sender, :text, :sent_time) RETURNING id""")
+        result = app.db.session.execute(sql, {"thread" : self.thread, "sender" : self.sender, "text" : self.text, "sent_time" : self.sent_time})
         app.db.session.commit()
+        self.id = result.fetchone()[0]
 
 class Thread:
     @classmethod
@@ -77,9 +78,10 @@ class Thread:
         return result
     
     def insert(self):
-        sql = text("""INSERT INTO threads (area, title) VALUES (:area, :title)""")
-        app.db.session.execute(sql, {"area" : self.area, "title" : self.title})
+        sql = text("""INSERT INTO threads (area, title) VALUES (:area, :title) RETURNING id""")
+        result = app.db.session.execute(sql, {"area" : self.area, "title" : self.title})
         app.db.session.commit()
+        self.id = result.fetchone()[0]
 
 class Area:
     @classmethod
@@ -124,7 +126,7 @@ class Area:
         return None
         
     @property
-    def threads(self):
+    def threads(self): # TODO: Make create_from_sql_result for all models to not be used. Get las_message with SQL directly.
         sql = text("""SELECT * FROM threads t WHERE t.area = :area_id""")
         result = app.db.session.execute(sql, {"area_id" : self.id}).fetchall()
         threads:list[Thread] = []
@@ -134,9 +136,10 @@ class Area:
         return threads
     
     def insert(self):
-        sql = text("""INSERT INTO areas (topic) VALUES (:topic)""")
-        app.db.session.execute(sql, {"topic" : self.topic})
+        sql = text("""INSERT INTO areas (topic) VALUES (:topic) RETURNING id""")
+        result = app.db.session.execute(sql, {"topic" : self.topic})
         app.db.session.commit()
+        self.id = result.fetchone()[0]
 
 class User:
     @classmethod
