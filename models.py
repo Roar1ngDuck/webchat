@@ -8,6 +8,8 @@ from sqlalchemy import text
 import bcrypt
 import helpers
 
+# TODO: Refactor a lot of this code
+
 class Message:
     @classmethod
     def create_from_sql_result(cls, sql_result):
@@ -76,6 +78,16 @@ class Thread:
         if result != None:
             self.last_message = helpers.time_ago(result)
         return result
+    
+    @property
+    def area_name(self):
+        sql = text("""SELECT a.topic FROM areas a, threads t WHERE a.id = t.area AND t.id = :thread_id""")
+        return app.db.session.execute(sql, {"thread_id" : self.id}).fetchone()[0]
+    
+    @property
+    def area_id(self):
+        sql = text("""SELECT t.area FROM threads t WHERE t.id = :thread_id""")
+        return app.db.session.execute(sql, {"thread_id" : self.id}).fetchone()[0]
     
     def insert(self):
         sql = text("""INSERT INTO threads (area, title) VALUES (:area, :title) RETURNING id""")

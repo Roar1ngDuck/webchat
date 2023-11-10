@@ -12,12 +12,14 @@
 </head>
 <body>
     <header>
-        <div class="header-container">{% block title %}<h1>WebChat</h1>{% endblock %}</div>
-        {% if "user_id" in session %}
-            <span class="username-display">Logged in as <span class="username-highlight">{{ session["username"] }}</span></span>
+        <div class="header-container">{% block title %}<a class="header-link-home" href="/">WebChat</a>{% endblock %}</div>
+        <div class="navbar-container">
+            {% if "user_id" in session %}
+            <span  class="username-display">Logged in as <span class="username-highlight">{{ session["username"] }}</span></span>
             <a href="{{ url_for('logout') }}" class="logout-button">Logout</a>
             {% block navbar %}{% endblock %}
-        {% endif %}
+            {% endif %}
+        </div>
     </header>
     <main>
         {% block content %}{% endblock %}

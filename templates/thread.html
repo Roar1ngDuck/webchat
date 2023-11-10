@@ -1,7 +1,9 @@
 {% extends "base.html" %}
 
 {% block title %}
-<h1>WebChat - Messages</h1> <div class="header-small">{{ thread.title }}</div>
+<a class="header-link-home" href="/">WebChat</a> 
+<a class="header-small" href="{{ url_for('view_area', area_id=thread.area_id) }}">{{ thread.area_name }}</a> 
+<a class="header-smaller" href="{{ url_for('view_thread', thread_id=thread.id) }}">{{ thread.title }}</a>
 {% endblock %}
 
 {% block content %}

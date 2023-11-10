@@ -1,19 +1,20 @@
 {% extends "base.html" %}
 
 {% block title %}
-<h1>WebChat - Threads</h1> <div class="header-small">{{ area.topic }}</div>
+<a class="header-link-home" href="/">WebChat</a> 
+<a class="header-small" href="{{ url_for('view_area', area_id=area.id) }}">{{ area.topic }}</a>
 {% endblock %}
 
 {% block navbar %}
 <!-- Add Thread Button -->
-<button id="createAreaBtn" class="modern-button">New Thread</button>
+<button id="createAreaBtn" class="modern-button green-border">New Thread</button>
 {% endblock %}
 
 {% block content %}
 <section class="discussion-areas">
     {% for thread in area.threads %}
     <a href="{{ url_for('view_thread', thread_id=thread.id) }}" class="discussion-area-link">
-        <article class="discussion-area">
+        <article class="discussion-area green-border">
             <h2>{{ thread.title }}</h2>
             <p>Messages: <span class="message-count">{{ thread.message_count }}</span></p>
             <p>Last Message: <time class="last-message">{{ thread.last_message }}</time></p>

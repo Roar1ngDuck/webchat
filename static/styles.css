@@ -26,14 +26,28 @@ header {
     display: flex;
 }
 
-.header-container h1 {
+.header-link-home {
     margin-right: 1rem;
+    font-size: 2rem;
+    font-weight: bold;
+    text-decoration: none;
+    color: inherit;
 }
 
 .header-small {
     margin-top: 1rem;
+    margin-right: 1rem;
     font-size: 1.2rem;
     color: rgb(114, 177, 228);
+    text-decoration: none;
+}
+
+.header-smaller {
+    margin-top: 1.5rem;
+    margin-right: 1rem;
+    font-size: 0.9rem;
+    color: rgb(114 228 139);
+    text-decoration: none;
 }
 
 @media (max-width: 767px) {
@@ -41,6 +55,10 @@ header {
         display: none;
     }
   }
+
+.navbar-container {
+    display: flex;
+}
 
 /* Main content area styling: padding */
 main {
@@ -117,13 +135,15 @@ main {
 }
 
 .modern-button {
-    padding: 0.5rem 1rem;
     border: 1px solid rgb(114, 177, 228);
     color: white;
     text-decoration: none;
     font-weight: bold;
     background-color: inherit;
-    height: 2.3rem;
+    height: auto;
+    margin: 0.2rem 0rem 0.2rem 1rem;
+    padding: 0.5rem 1.2rem 0.5rem 1.2rem;
+    font-size: 1rem;
 }
 .modern-button:hover {
     background-color: rgb(52, 86, 114);
@@ -244,11 +264,15 @@ main {
 /* Logout Button Styles */
 /* Style for the logout button and its hover state */
 .logout-button {
-    padding: 0.5rem 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     border: 1px solid #7d4741;
     color: white;
     text-decoration: none;
     font-weight: bold;
+    padding: 0.5rem 1.2rem 0.5rem 1.2rem;
+    margin: 0.2rem 0rem 0.2rem 0rem;
 }
 
 .logout-button:hover {
@@ -258,12 +282,15 @@ main {
 /* Username Display Styles */
 /* Style for the username display area */
 .username-display {
+    display: flex;
+    align-items: center;
     margin-right: 1rem;
 }
 
 /* Style for highlighting the username */
 .username-highlight {
     color: rgb(128, 114, 228);
+    margin-left: 0.5rem;
 }
 
 /* Message Form Styles */
@@ -300,12 +327,12 @@ main {
 .chat-container {
     display: flex;
     flex-direction: column;
-    height: calc(100vh - 9rem); /* Adjusts the container to fill the height of the viewport minus the combined height of header and other elements */
+    height: calc(100vh - 11rem); /* Adjusts the container to fill the height of the viewport minus the combined height of header and other elements */
 }
 
 @media (max-width: 767px) {
     .chat-container {
-        height: calc(100vh - 14rem); /* Adjusts the container to fill the height of the viewport minus the combined height of header and other elements */
+        height: calc(100vh - 16rem); /* Adjusts the container to fill the height of the viewport minus the combined height of header and other elements */
     }
   }
 
@@ -358,4 +385,8 @@ main {
 .strength-strong {
     width: 100%; /* Strong strength: 100% width */
     background-color: #27ae60; /* Strong strength: green color */
+}
+
+.green-border {
+    border: 1px solid rgb(114 228 139);
 }
