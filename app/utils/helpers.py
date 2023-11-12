@@ -6,30 +6,34 @@ import os
 import app
 from sqlalchemy import text
 import random
-import models
+from ..models.message import Message
+from ..models.area import Area
+from ..models.thread import Thread
+from ..models.user import User
 import bcrypt
 from zxcvbn import zxcvbn
+from ..utils import db
 
 def create_test_data():
     for i in range(10):
-        msg = models.Message.create(random.randint(0, 3), random.randint(0, 3), "Test message hello!")
+        msg = Message.create(random.randint(0, 3), random.randint(0, 3), "Test message hello!")
         msg.insert()
 
-        thread = models.Thread.create(random.randint(0, 3), f"Test thread {i}")
+        thread = Thread.create(random.randint(0, 3), f"Test thread {i}")
         thread.insert()
 
-        area = models.Area.create(f"Test topic {i}")
+        area = Area.create(f"Test topic {i}")
         area.insert()
 
-    user = models.User.create("test", "test")
+    user = User.create("test", "test")
     user.insert()
 
 def get_areas():
     sql = text("""SELECT id, topic FROM areas""")
-    areas:list[models.Area] = []
+    areas:list[Area] = []
 
-    for result in models.connection.execute(sql).mappings():
-        area = models.Area()
+    for result in db.connection.execute(sql).mappings():
+        area = Area()
         area.id = result["id"]
         area.topic = result["topic"]
         areas.append(area)
@@ -38,7 +42,7 @@ def get_areas():
 
 def username_exists(username):
     sql = text("""SELECT COUNT(*) FROM users u WHERE u.username = :username""")
-    result = models.connection.execute(sql, {"username" : username})
+    result = db.connection.execute(sql, {"username" : username})
     fetched = result.fetchone()[0]
     if fetched == 0:
         return False

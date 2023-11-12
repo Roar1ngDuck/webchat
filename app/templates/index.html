@@ -1,23 +1,19 @@
 {% extends "base.html" %}
 
-{% block title %}
-<a class="header-link-home" href="/">WebChat</a> 
-<a class="header-small" href="{{ url_for('view_area', area_id=area.id) }}">{{ area.topic }}</a>
-{% endblock %}
-
 {% block navbar %}
-<!-- Add Thread Button -->
-<button id="createAreaBtn" class="modern-button green-border">New Thread</button>
+<!-- Add Area Button -->
+<button id="createAreaBtn" class="modern-button">New Area</button>
 {% endblock %}
 
 {% block content %}
 <section class="discussion-areas">
-    {% for thread in area.threads %}
-    <a href="{{ url_for('view_thread', thread_id=thread.id) }}" class="discussion-area-link">
-        <article class="discussion-area green-border">
-            <h2>{{ thread.title }}</h2>
-            <p>Messages: <span class="message-count">{{ thread.message_count }}</span></p>
-            <p>Last: <time class="last-message">{{ thread.last_message }}</time></p>
+    {% for area in areas %}
+    <a href="{{ url_for('chat.view_area', area_id=area.id) }}" class="discussion-area-link">
+        <article class="discussion-area">
+            <h2>{{ area.topic }}</h2>
+            <p>Threads: <span class="thread-count">{{ area.thread_count }}</span></p>
+            <p>Messages: <span class="message-count">{{ area.message_count }}</span></p>
+            <p>Last: <time class="last-message">{{ area.last_message }}</time></p>
         </article>
     </a>
     {% endfor %}
@@ -25,13 +21,11 @@
 <div id="createAreaModal" class="modal">
     <div class="modal-content">
         <span class="close-btn">&times;</span>
-        <form action="{{ url_for('view_area', area_id=area.id) }}" method="post" id="createAreaForm">
-            <h2>Create New Thread</h2>
+        <form action="{{ url_for('chat.index') }}" method="post" id="createAreaForm">
+            <h2>Create New Area</h2>
             <div class="form-group">
-                <label for="topicName">Title</label>
-                <input type="text" id="topicName" name="title" required>
-                <label for="message">First message</label>
-                <textarea name="message" rows="5" required></textarea>
+                <label for="topicName">Topic:</label>
+                <input type="text" id="topicName" name="topic" required>
             </div>
             <button type="submit" class="modern-button">Create</button>
         </form>

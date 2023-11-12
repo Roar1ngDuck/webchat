@@ -2,8 +2,8 @@
 
 {% block title %}
 <a class="header-link-home" href="/">WebChat</a> 
-<a class="header-small" href="{{ url_for('view_area', area_id=thread.area) }}">{{ thread.area_name }}</a> 
-<a class="header-smaller" href="{{ url_for('view_thread', thread_id=thread.id) }}">{{ thread.title }}</a>
+<a class="header-small" href="{{ url_for('chat.view_area', area_id=thread.area) }}">{{ thread.area_name }}</a> 
+<a class="header-smaller" href="{{ url_for('chat.view_thread', thread_id=thread.id) }}">{{ thread.title }}</a>
 {% endblock %}
 
 {% block content %}
@@ -21,7 +21,7 @@
         <p>No messages yet.</p>
         {% endfor %}
     </section>
-    <form action="{{ url_for('view_thread', thread_id=thread.id) }}" method="post" id="message-form">
+    <form action="{{ url_for('chat.view_thread', thread_id=thread.id) }}" method="post" id="message-form">
         <textarea name="message" rows="5" required></textarea>
         <button type="submit">Send</button>
     </form>
