@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify, render_template, redirect, session
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import text
+from sqlalchemy import create_engine, text
 from datetime import datetime
 import os
 import helpers
@@ -12,7 +12,7 @@ from models import Area, Thread, Message, User
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:postgres@localhost/webchat'
 app.secret_key = getenv("SECRET_KEY")
-db = SQLAlchemy(app)
+#db = SQLAlchemy(app)
 
 @app.route("/generate")
 def generate_test_data():

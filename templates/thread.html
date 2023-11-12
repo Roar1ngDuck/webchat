@@ -2,7 +2,7 @@
 
 {% block title %}
 <a class="header-link-home" href="/">WebChat</a> 
-<a class="header-small" href="{{ url_for('view_area', area_id=thread.area_id) }}">{{ thread.area_name }}</a> 
+<a class="header-small" href="{{ url_for('view_area', area_id=thread.area) }}">{{ thread.area_name }}</a> 
 <a class="header-smaller" href="{{ url_for('view_thread', thread_id=thread.id) }}">{{ thread.title }}</a>
 {% endblock %}
 
@@ -13,7 +13,7 @@
         <article class="message">
             <header>
                 <time>{{ message.sent_time }}</time>
-                <strong>{{ message.sender }}</strong>
+                <strong>{{ message.sender_name }}</strong>
             </header>
             <p>{{ message.text }}</p>
         </article>

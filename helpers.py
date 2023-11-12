@@ -25,18 +25,20 @@ def create_test_data():
     user.insert()
 
 def get_areas():
-    sql = text("""SELECT * FROM areas""")
+    sql = text("""SELECT id, topic FROM areas""")
     areas:list[models.Area] = []
 
-    for result in app.db.session.execute(sql).fetchall():
-        area = models.Area.create_from_sql_result(result)
+    for result in models.connection.execute(sql).mappings():
+        area = models.Area()
+        area.id = result["id"]
+        area.topic = result["topic"]
         areas.append(area)
 
     return areas
 
 def username_exists(username):
     sql = text("""SELECT COUNT(*) FROM users u WHERE u.username = :username""")
-    result = app.db.session.execute(sql, {"username" : username})
+    result = models.connection.execute(sql, {"username" : username})
     fetched = result.fetchone()[0]
     if fetched == 0:
         return False
@@ -75,7 +77,8 @@ def check_password(hashed_password, user_password):
         return True
     else:
         return False
-    
+
+# TODO: Limit execution time to prevent DoS    
 def is_password_secure(password):
     strength = zxcvbn(password)
 
