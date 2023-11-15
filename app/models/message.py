@@ -1,8 +1,11 @@
 from datetime import datetime
 from sqlalchemy import text
-from ..utils import db
+from ..utils.db import Database
 
 class Message:
+    def __init__(self):
+        self.db = Database()
+
     @classmethod
     def create(cls, thread, sender, text):
         instance = cls()
@@ -14,6 +17,4 @@ class Message:
 
     def insert(self):
         sql = text("""INSERT INTO messages (thread, sender, text, sent_time) VALUES (:thread, :sender, :text, :sent_time) RETURNING id""")
-        result = db.connection.execute(sql, {"thread" : self.thread, "sender" : self.sender, "text" : self.text, "sent_time" : self.sent_time})
-        db.connection.commit()
-        self.id = result.fetchone()[0]
+        self.id = self.db.insert_one(sql, {"thread" : self.thread, "sender" : self.sender, "text" : self.text, "sent_time" : self.sent_time})["id"]

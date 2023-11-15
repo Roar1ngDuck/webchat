@@ -4,13 +4,16 @@ from sqlalchemy import text
 from ..models.area import Area
 import bcrypt
 from zxcvbn import zxcvbn
-from ..utils import db
+from ..utils.db import Database
 
 def get_areas():
+    db = Database()
+
     sql = text("""SELECT id, topic FROM areas""")
     areas:list[Area] = []
 
-    for result in db.connection.execute(sql).mappings():
+
+    for result in db.fetch_all(sql):
         area = Area()
         area.id = result["id"]
         area.topic = result["topic"]
@@ -19,25 +22,26 @@ def get_areas():
     return areas
 
 def username_exists(username):
+    db = Database()
+
     sql = text("""SELECT COUNT(*) FROM users u WHERE u.username = :username""")
-    result = db.connection.execute(sql, {"username" : username})
-    fetched = result.fetchone()[0]
-    if fetched == 0:
+    if db.fetch_one(sql, {"username" : username})["count"] == 0:
         return False
 
     return True
 
 def verify_login(request):
+    db = Database()
+
     username = request.form["username"]
     sql = text("""SELECT u.id, u.password FROM users u WHERE u.username = :username""")
-    result = db.connection.execute(sql, {"username" : username})
-    fetched = result.fetchone()
+    result = db.fetch_one(sql, {"username" : username})
 
-    if fetched == None:
+    if result == None:
         return None
 
-    id = fetched[0]
-    password_hash = fetched[1].tobytes()
+    id = result["id"]
+    password_hash = result["password"].tobytes()
 
     if check_password(password_hash, request.form["password"]):
         return id

@@ -1,9 +1,13 @@
 from sqlalchemy import text
 from datetime import datetime
-from ..utils import helpers, db
+from ..utils import helpers
+from ..utils.db import Database
 from .message import Message
 
 class Thread:
+    def __init__(self):
+        self.db = Database()
+
     @classmethod
     def create_from_db(cls, id):
         instance = cls()
@@ -14,7 +18,7 @@ JOIN users u ON m.sender = u.id
 JOIN threads t ON m.thread = t.id 
 JOIN areas a on t.area = a.id WHERE m.thread = :thread_id""")
         instance.messages:list[Thread] = []
-        for row in db.connection.execute(sql, {"thread_id" : id}).mappings():
+        for row in instance.db.fetch_all(sql, {"thread_id" : id}):
             instance.title = row["title"]
             instance.area = row["area"]
             instance.area_name = row["topic"]
@@ -41,18 +45,16 @@ JOIN areas a on t.area = a.id WHERE m.thread = :thread_id""")
     @property
     def message_count(self):
         sql = text("""SELECT COUNT(*) FROM messages m WHERE m.thread = :thread_id""")
-        return db.connection.execute(sql, {"thread_id" : self.id}).fetchone()[0]
+        return self.db.fetch_one(sql, {"thread_id" : self.id})["count"]
     
     @property
     def last_message(self):
         sql = text("""SELECT MAX(m.sent_time) FROM messages m WHERE m.thread = :thread_id""")
-        result = db.connection.execute(sql, {"thread_id" : self.id}).fetchone()[0]
+        result = self.db.fetch_one(sql, {"thread_id" : self.id})["max"]
         if result != None:
             self.last_message = helpers.time_ago(result)
         return result
     
     def insert(self):
         sql = text("""INSERT INTO threads (area, title) VALUES (:area, :title) RETURNING id""")
-        result = db.connection.execute(sql, {"area" : self.area, "title" : self.title})
-        db.connection.commit()
-        self.id = result.fetchone()[0]
+        self.id = self.db.insert_one(sql, {"area" : self.area, "title" : self.title})["id"]
