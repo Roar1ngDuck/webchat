@@ -1,32 +1,10 @@
-from flask import Flask, request, jsonify
-from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import text
 from datetime import datetime
-import os
-import app
 from sqlalchemy import text
-import random
-from ..models.message import Message
 from ..models.area import Area
-from ..models.thread import Thread
-from ..models.user import User
 import bcrypt
 from zxcvbn import zxcvbn
 from ..utils import db
-
-def create_test_data():
-    for i in range(10):
-        msg = Message.create(random.randint(0, 3), random.randint(0, 3), "Test message hello!")
-        msg.insert()
-
-        thread = Thread.create(random.randint(0, 3), f"Test thread {i}")
-        thread.insert()
-
-        area = Area.create(f"Test topic {i}")
-        area.insert()
-
-    user = User.create("test", "test")
-    user.insert()
 
 def get_areas():
     sql = text("""SELECT id, topic FROM areas""")
@@ -52,7 +30,7 @@ def username_exists(username):
 def verify_login(request):
     username = request.form["username"]
     sql = text("""SELECT u.id, u.password FROM users u WHERE u.username = :username""")
-    result = app.db.session.execute(sql, {"username" : username})
+    result = db.connection.execute(sql, {"username" : username})
     fetched = result.fetchone()
 
     if fetched == None:

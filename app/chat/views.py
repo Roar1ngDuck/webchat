@@ -1,10 +1,5 @@
-from flask import Flask, request, jsonify, render_template, redirect, session, Blueprint
-from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import create_engine, text
-from datetime import datetime
-import os
+from flask import request, render_template, redirect, session, Blueprint
 from ..utils import helpers
-from os import getenv
 from faker import Faker
 import random
 from ..models.area import Area
