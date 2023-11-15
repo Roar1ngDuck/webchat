@@ -52,7 +52,7 @@ JOIN areas a on t.area = a.id WHERE m.thread = :thread_id""")
         sql = text("""SELECT MAX(m.sent_time) FROM messages m WHERE m.thread = :thread_id""")
         result = self.db.fetch_one(sql, {"thread_id" : self.id})["max"]
         if result != None:
-            self.last_message = helpers.time_ago(result)
+            return helpers.time_ago(result)
         return result
     
     def insert(self):
