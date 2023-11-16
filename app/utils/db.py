@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from os import getenv
 from threading import Lock
 
@@ -11,7 +11,36 @@ class Database:
             if cls._instance is None:
                 cls._instance = super(Database, cls).__new__(cls)
                 cls._instance.engine = create_engine(getenv("DB_URL"))
+                cls._instance._initialize_tables()
         return cls._instance
+
+    def _initialize_tables(self):
+        table_creation_sql = """
+        CREATE TABLE IF NOT EXISTS messages (
+            id SERIAL PRIMARY KEY,
+            thread integer NOT NULL,
+            sender integer NOT NULL,
+            text TEXT NOT NULL,
+            sent_time TIMESTAMP WITHOUT TIME ZONE DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC')
+        );
+        CREATE TABLE IF NOT EXISTS threads (
+            id SERIAL PRIMARY KEY,
+            area integer NOT NULL,
+            title TEXT NOT NULL
+        );
+        CREATE TABLE IF NOT EXISTS areas (
+            id SERIAL PRIMARY KEY,
+            topic TEXT NOT NULL
+        );
+        CREATE TABLE IF NOT EXISTS users (
+            id SERIAL PRIMARY KEY,
+            username TEXT NOT NULL,
+            password bytea NOT NULL
+        );
+        """
+        with self.engine.connect() as connection:
+            with connection.begin():
+                connection.execute(text(table_creation_sql))
 
     def fetch_all(self, sql, params=None):
         with self.engine.connect() as connection:
