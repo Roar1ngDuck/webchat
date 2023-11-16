@@ -11,8 +11,18 @@ class Database:
             if cls._instance is None:
                 cls._instance = super(Database, cls).__new__(cls)
                 cls._instance.engine = create_engine(getenv("DB_URL"))
+                if getenv("TEST_ENV") == "True":
+                    cls._instance._drop_tables()  # Drop tables if in test environment
                 cls._instance._initialize_tables()
         return cls._instance
+    
+    def _drop_tables(self):
+        drop_tables_sql = """
+        DROP TABLE IF EXISTS messages, threads, areas, users CASCADE;
+        """
+        with self.engine.connect() as connection:
+            with connection.begin():
+                connection.execute(text(drop_tables_sql))
 
     def _initialize_tables(self):
         table_creation_sql = """
