@@ -11,8 +11,7 @@ class Message:
         if sent_time:
             self.sent_time = sent_time
         else:
-            self.sent_time = datetime.utcnow()
-        self.sent_time = datetime.strftime(self.sent_time, "%d.%m.%Y %H:%M")
+            self.sent_time = datetime.now()
         self.id = message_id
         self.thread_title = thread_title
         self.sender_name = sender_name
