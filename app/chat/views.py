@@ -6,6 +6,7 @@ from ..models.area import Area
 from ..models.thread import Thread
 from ..models.user import User
 from ..models.message import Message
+from ..utils.decorators import login_required
 
 chat_blueprint = Blueprint('chat', __name__)
 
@@ -49,12 +50,9 @@ def generate_test_data():
 
     return redirect("/")
     
-
 @chat_blueprint.route("/", methods=['GET', 'POST'])
+@login_required
 def index():
-    if "user_id" not in session:
-        return redirect("/login")
-    
     # TODO: List recently active threads on the right side of the flex box, only on desktop.
 
     if request.method == "POST":
@@ -63,10 +61,8 @@ def index():
     return render_template("index.html", areas=helpers.get_areas())
 
 @chat_blueprint.route("/area/<int:area_id>", methods=['GET', 'POST'])
+@login_required
 def view_area(area_id):
-    if "user_id" not in session:
-        return redirect("/login")
-
     # TODO: List recent messages on the right side of the flex box, only on desktop.
 
     if request.method == "POST":
@@ -77,10 +73,8 @@ def view_area(area_id):
     return render_template("area.html", area=Area.create_from_db(area_id))
 
 @chat_blueprint.route("/thread/<int:thread_id>", methods=['GET', 'POST'])
+@login_required
 def view_thread(thread_id):
-    if "user_id" not in session:
-        return redirect("/login")
-
     if request.method == "POST":
         Message(thread_id, session["user_id"], request.form["message"]).insert()
 
@@ -101,8 +95,6 @@ def login():
     
 @chat_blueprint.route("/register", methods=['GET', 'POST'])
 def register():
-    if request.method == "GET":
-        return render_template("register.html")
     if request.method == "POST":
         if helpers.username_exists(request.form["username"]):
             return render_template("register.html", error="Username taken")
