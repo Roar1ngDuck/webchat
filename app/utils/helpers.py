@@ -14,9 +14,7 @@ def get_areas():
 
 
     for result in db.fetch_all(sql):
-        area = Area()
-        area.id = result["id"]
-        area.topic = result["topic"]
+        area = Area(result["topic"], result["id"])
         areas.append(area)
 
     return areas

@@ -5,41 +5,26 @@ from ..utils.db import Database
 from .message import Message
 
 class Thread:
-    def __init__(self):
+    def __init__(self, area, title, id = None, area_name = None):
         self.db = Database()
+        self.area = area
+        self.title = title
+        self.id = id
+        self.area_name = area_name
+        self.messages:list[Thread] = []
 
     @classmethod
     def create_from_db(cls, id):
-        instance = cls()
-        instance.id = id
         sql = text("""
 SELECT m.id, t.title, u.id as sender_id, u.username, m.text, m.sent_time, t.area, a.topic FROM messages m 
 JOIN users u ON m.sender = u.id 
 JOIN threads t ON m.thread = t.id 
 JOIN areas a on t.area = a.id WHERE m.thread = :thread_id""")
-        instance.messages:list[Thread] = []
-        for row in instance.db.fetch_all(sql, {"thread_id" : id}):
-            instance.title = row["title"]
-            instance.area = row["area"]
-            instance.area_name = row["topic"]
-
-            message = Message()
-            message.id = row["id"]
-            message.thread = id
-            message.thread_title = row["title"]
-            message.sender = row["sender_id"]
-            message.sender_name = row["username"]
-            message.text = row["text"]
-            message.sent_time = datetime.strftime(row["sent_time"], "%d.%m.%Y %H:%M")
-            
-            instance.messages.append(message)
-        return instance
-
-    @classmethod
-    def create(cls, area, title):
-        instance = cls()
-        instance.area = area
-        instance.title = title
+        instance = None
+        for row in Database().fetch_all(sql, {"thread_id" : id}):
+            if not instance:
+                instance = cls(row["area"], row["title"], id, row["topic"])
+            instance.messages.append(Message(id, row["sender_id"], row["text"], row["id"], row["title"], row["username"], row["sent_time"]))
         return instance
     
     @property
@@ -58,3 +43,4 @@ JOIN areas a on t.area = a.id WHERE m.thread = :thread_id""")
     def insert(self):
         sql = text("""INSERT INTO threads (area, title) VALUES (:area, :title) RETURNING id""")
         self.id = self.db.insert_one(sql, {"area" : self.area, "title" : self.title})["id"]
+        return self
