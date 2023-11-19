@@ -1,4 +1,4 @@
-from flask import request, render_template, redirect, session, Blueprint
+from flask import request, render_template, redirect, session, Blueprint, url_for
 from ..utils import helpers
 from ..models.area import Area
 from ..models.thread import Thread
@@ -6,7 +6,7 @@ from ..models.user import User
 from ..models.message import Message
 from ..utils.decorators import login_required
 
-chat_blueprint = Blueprint('chat', __name__)
+chat_blueprint = Blueprint('chat', __name__, url_prefix='/', static_folder='../static')
     
 @chat_blueprint.route("/", methods=['GET', 'POST'])
 @login_required
@@ -55,7 +55,7 @@ def login():
             return render_template("login.html", error=True)
         session["user_id"] = user_id
         session["username"] = request.form["username"]
-        return redirect("/")
+        return redirect(url_for("chat.index"))
     
 @chat_blueprint.route("/register", methods=['GET', 'POST'])
 def register():
@@ -71,9 +71,9 @@ def register():
 
         User(request.form["username"], request.form["password"]).insert()
 
-        return redirect("/login")
+        return redirect(url_for("chat.login"))
     
 @chat_blueprint.route("/logout")
 def logout():
     session.pop("user_id")
-    return redirect("/")
+    return redirect(url_for("chat.index"))

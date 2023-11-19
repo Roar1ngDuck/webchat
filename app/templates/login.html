@@ -5,7 +5,7 @@
     {% if error %}
         <p class="login-error">Incorrect username or password.</p>
     {% endif %}
-    <form action="/login" method="post">
+    <form action="{{ url_for('chat.login') }}" method="post">
         <div class="form-group">
             <label for="username">Username</label>
             <input type="text" id="username" name="username" required>
@@ -20,7 +20,7 @@
     </form>
      <!-- Registration Link -->
      <p class="register-link">
-        Don't have an account? <a href="/register">Register here</a>.
+        Don't have an account? <a href="{{ url_for('chat.register') }}">Register here</a>.
     </p>
 </div>
 {% endblock %}
