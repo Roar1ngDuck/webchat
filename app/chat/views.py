@@ -101,6 +101,8 @@ def login():
     
 @chat_blueprint.route("/register", methods=['GET', 'POST'])
 def register():
+    if request.method == "GET":
+        return render_template("register.html")
     if request.method == "POST":
         if helpers.username_exists(request.form["username"]):
             return render_template("register.html", error="Username taken")
