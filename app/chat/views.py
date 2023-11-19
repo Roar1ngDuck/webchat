@@ -56,6 +56,8 @@ def index():
     # TODO: List recently active threads on the right side of the flex box, only on desktop.
 
     if request.method == "POST":
+        if not helpers.is_valid_area_topic(request.form["topic"]):
+            return render_template("index.html", areas=helpers.get_areas(), error=True)
         Area(request.form["topic"]).insert()
 
     return render_template("index.html", areas=helpers.get_areas())
@@ -66,6 +68,8 @@ def view_area(area_id):
     # TODO: List recent messages on the right side of the flex box, only on desktop.
 
     if request.method == "POST":
+        if not helpers.is_valid_thread_title(request.form["title"]):
+            return render_template("area.html", areas=helpers.get_areas(), error=True)
         thread_id = Thread(area_id, request.form["title"]).insert().id
 
         Message(thread_id, session["user_id"], request.form["message"]).insert()
@@ -76,6 +80,8 @@ def view_area(area_id):
 @login_required
 def view_thread(thread_id):
     if request.method == "POST":
+        if not helpers.is_valid_message(request.form["message"]):
+            return render_template("thread.html", areas=helpers.get_areas(), error=True)
         Message(thread_id, session["user_id"], request.form["message"]).insert()
 
     return render_template("thread.html", thread=Thread.create_from_db(thread_id))
@@ -87,7 +93,7 @@ def login():
         return render_template("login.html")
     if request.method == "POST":
         user_id = helpers.verify_login(request)
-        if user_id == None:
+        if not user_id:
             return render_template("login.html", error=True)
         session["user_id"] = user_id
         session["username"] = request.form["username"]

@@ -65,3 +65,12 @@ def time_ago(date):
         return f"{int(months)} months ago"
     else:
         return f"{int(years)} years ago"
+    
+def is_valid_area_topic(topic):
+    return len(topic) > 0 and len(topic) < 64
+
+def is_valid_thread_title(title):
+    return len(title) > 0 and len(title) < 64
+
+def is_valid_message(message):
+    return len(message) > 0 and len(message) < 1024
