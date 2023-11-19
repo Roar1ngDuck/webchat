@@ -1,7 +1,5 @@
 from flask import request, render_template, redirect, session, Blueprint
 from ..utils import helpers
-from faker import Faker
-import random
 from ..models.area import Area
 from ..models.thread import Thread
 from ..models.user import User
@@ -9,46 +7,6 @@ from ..models.message import Message
 from ..utils.decorators import login_required
 
 chat_blueprint = Blueprint('chat', __name__)
-
-@chat_blueprint.route("/generate")
-def generate_test_data():
-    fake = Faker()
-
-    # Create some users
-    users = []
-    for i in range(10):
-        username = fake.user_name()
-        password = fake.password(length=10, special_chars=True, digits=True, upper_case=True, lower_case=True)
-        user = User(username, password)
-        user.insert()
-        users.append(user)
-
-    # Create some areas
-    areas = []
-    for i in range(5):
-        topic = fake.unique.word().title()
-        area = Area(topic)
-        area.insert()
-        areas.append(area)
-
-    # Create some threads within those areas
-    threads = []
-    for i in range(20):
-        area_index = random.randint(1, len(areas))
-        title = fake.sentence(nb_words=6).rstrip('.')
-        thread = Thread(area_index, title)
-        thread.insert()
-        threads.append(thread)
-
-    # Create some messages within those threads
-    for i in range(1, len(threads)):
-        for _ in range(random.randint(5, 15)):
-            thread_index = i
-            sender_index = random.randint(0, len(users) - 1)
-            msg = Message(thread_index, sender_index, fake.paragraph(nb_sentences=3))
-            msg.insert()
-
-    return redirect("/")
     
 @chat_blueprint.route("/", methods=['GET', 'POST'])
 @login_required
@@ -106,7 +64,7 @@ def register():
     if request.method == "POST":
         if helpers.username_exists(request.form["username"]):
             return render_template("register.html", error="Username taken")
-        if helpers.is_password_secure(request.form["password"]) == False:
+        if not helpers.is_password_secure(request.form["password"]):
             return render_template("register.html", error="Password is too weak")   
         if request.form["password"] != request.form["confirm_password"]:
             return render_template("register.html", error="Passwords don't match")
