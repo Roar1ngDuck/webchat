@@ -1,6 +1,9 @@
 <h2>Overview</h2>
 <p>This repository contains the code for a discussion application, which facilitates the creation and interaction within various discussion areas based on different topics. Each area contains threads consisting of messages. Users can either be administrators or basic users. However, the current version only supports basic user functionalities.</p>
 
+<h2>Live Demo</h2>
+<p>You can check out the live project hosted at <a href="https://nikoweb.eu/projects/webchat/">https://nikoweb.eu/projects/webchat/</a></p>
+
 <h2>Features</h2>
 
 <h3>User Account Management</h3>
