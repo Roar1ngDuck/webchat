@@ -3,7 +3,7 @@
 {% block content %}
 <div class="login-container">
     {% if error %}
-        <p class="login-error">Incorrect username or password.</p>
+        <p class="generic-error">Incorrect username or password.</p>
     {% endif %}
     <form action="{{ url_for('chat.login') }}" method="post">
         <div class="form-group">
@@ -14,6 +14,7 @@
             <label for="password">Password</label>
             <input type="password" id="password" name="password" required>
         </div>
+        <div class="cf-turnstile" data-sitekey="0x4AAAAAAANaDnjjlPmlyDNv"></div>
         <div class="form-group">
             <button type="submit">Login</button>
         </div>

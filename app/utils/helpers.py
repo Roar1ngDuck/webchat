@@ -4,6 +4,8 @@ from ..models.area import Area
 import bcrypt
 from zxcvbn import zxcvbn
 from ..utils.db import Database
+import requests
+from os import getenv
 
 def get_areas():
     areas:list[Area] = []
@@ -41,6 +43,32 @@ def hash_password(password):
 
 def is_password_secure(password):
     return zxcvbn(password)["score"] >= 4
+
+def verify_turnstile(request):
+    if getenv("USE_TURNSTILE") != "True":
+        return True
+
+    turnstile_response = request.form.get("cf-turnstile-response", "")
+    remote_ip = request.form.get("CF-Connecting-IP", "")
+
+    data = {
+    'secret': getenv("TURNSTILE_SECRET"),
+    'response': turnstile_response,
+    'remoteip': remote_ip
+    }
+
+    response = requests.post('https://challenges.cloudflare.com/turnstile/v0/siteverify', data=data)
+
+    if not response.ok:
+        return False
+
+    outcome = response.json()
+
+    if outcome.get('success'):
+        return True
+    
+    return False
+        
 
 def time_ago(date):
     now = datetime.now()

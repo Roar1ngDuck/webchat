@@ -8,10 +8,11 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
+    <script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 </head>
 <body>
     <header>
-        <div class="header-container">{% block title %}<a class="header-link-home" href="/">WebChat</a>{% endblock %}</div>
+        <div class="header-container">{% block title %}<a class="header-link-home" href="{{ url_for('chat.index') }}">WebChat</a>{% endblock %}</div>
         <div class="navbar-container">
             {% if "user_id" in session %}
             <span  class="username-display">Logged in as <span class="username-highlight">{{ session["username"] }}</span></span>
@@ -21,6 +22,9 @@
         </div>
     </header>
     <main>
+        {% if turnstile_error %}
+        <p class="generic-error">Captcha failed.</p>
+        {% endif %}
         {% block content %}{% endblock %}
     </main>
 </body>

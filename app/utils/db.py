@@ -11,7 +11,7 @@ class Database:
             if cls._instance is None:
                 cls._instance = super(Database, cls).__new__(cls)
                 cls._instance.engine = create_engine(getenv("DB_URL"))
-                if getenv("TEST_ENV") == "True":
+                if getenv("TEST") == "True":
                     cls._instance._drop_tables()  # Drop tables if in test environment
                 cls._instance._initialize_tables()
         return cls._instance

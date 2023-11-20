@@ -239,7 +239,7 @@ main {
 }
 
 /* Error message styles for login and registration */
-.login-error, .register-error {
+.generic-error {
     color: #e74c3c;
     margin-bottom: 1rem;
     text-align: center;

@@ -11,9 +11,9 @@ chat_blueprint = Blueprint('chat', __name__, url_prefix='/', static_folder='../s
 @chat_blueprint.route("/", methods=['GET', 'POST'])
 @login_required
 def index():
-    # TODO: List recently active threads on the right side of the flex box, only on desktop.
-
     if request.method == "POST":
+        if not helpers.verify_turnstile(request):
+            return render_template("index.html", areas=helpers.get_areas(), turnstile_error=True)
         if not helpers.is_valid_area_topic(request.form["topic"]):
             return render_template("index.html", areas=helpers.get_areas(), error=True)
         Area(request.form["topic"]).insert()
@@ -23,11 +23,11 @@ def index():
 @chat_blueprint.route("/area/<int:area_id>", methods=['GET', 'POST'])
 @login_required
 def view_area(area_id):
-    # TODO: List recent messages on the right side of the flex box, only on desktop.
-
     if request.method == "POST":
+        if not helpers.verify_turnstile(request):
+            return render_template("area.html", area=Area.create_from_db(area_id), turnstile_error=True)
         if not helpers.is_valid_thread_title(request.form["title"]):
-            return render_template("area.html", areas=helpers.get_areas(), error=True)
+            return render_template("area.html", area=Area.create_from_db(area_id), error=True)
         thread_id = Thread(area_id, request.form["title"]).insert().id
 
         Message(thread_id, session["user_id"], request.form["message"]).insert()
@@ -38,18 +38,21 @@ def view_area(area_id):
 @login_required
 def view_thread(thread_id):
     if request.method == "POST":
+        if not helpers.verify_turnstile(request):
+            return render_template("thread.html", thread=Thread.create_from_db(thread_id), turnstile_error=True)
         if not helpers.is_valid_message(request.form["message"]):
-            return render_template("thread.html", areas=helpers.get_areas(), error=True)
+            return render_template("thread.html", thread=Thread.create_from_db(thread_id), error=True)
         Message(thread_id, session["user_id"], request.form["message"]).insert()
 
     return render_template("thread.html", thread=Thread.create_from_db(thread_id))
     
-
 @chat_blueprint.route("/login", methods=['GET', 'POST'])
 def login():
     if request.method == "GET":
         return render_template("login.html")
     if request.method == "POST":
+        if not helpers.verify_turnstile(request):
+            return render_template("login.html", turnstile_error=True)
         user_id = helpers.verify_login(request)
         if not user_id:
             return render_template("login.html", error=True)
@@ -62,6 +65,8 @@ def register():
     if request.method == "GET":
         return render_template("register.html")
     if request.method == "POST":
+        if not helpers.verify_turnstile(request):
+            return render_template("register.html", turnstile_error=True)
         if helpers.username_exists(request.form["username"]):
             return render_template("register.html", error="Username taken")
         if not helpers.is_password_secure(request.form["password"]):
