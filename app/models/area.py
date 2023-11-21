@@ -4,16 +4,17 @@ from ..utils.db import Database
 from .thread import Thread
 
 class Area:
-    def __init__(self, topic, id = None):
+    def __init__(self, topic, is_secret = False, id = None):
         self.db = Database()
         self.topic = topic
+        self.is_secret = is_secret
         self.id = id
 
     @classmethod
     def create_from_db(cls, id):
-        sql = text("""SELECT a.topic FROM areas a WHERE a.id = :area_id""")
-        topic = Database().fetch_one(sql, {"area_id" : id})["topic"]
-        instance = cls(topic, id)
+        sql = text("""SELECT a.topic, a.is_secret FROM areas a WHERE a.id = :area_id""")
+        result = Database().fetch_one(sql, {"area_id" : id})
+        instance = cls(result["topic"], result["is_secret"], id)
         return instance
     
     @property
@@ -44,6 +45,6 @@ class Area:
         return threads
     
     def insert(self):
-        sql = text("""INSERT INTO areas (topic) VALUES (:topic) RETURNING id""")
-        self.id = self.db.insert_one(sql, {"topic" : self.topic})["id"]
+        sql = text("""INSERT INTO areas (topic, is_secret) VALUES (:topic, :is_secret) RETURNING id""")
+        self.id = self.db.insert_one(sql, {"topic" : self.topic, "is_secret" : self.is_secret})["id"]
         return self

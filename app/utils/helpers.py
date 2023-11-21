@@ -10,9 +10,9 @@ from os import getenv
 def get_areas():
     areas:list[Area] = []
 
-    sql = text("""SELECT id, topic FROM areas""")
+    sql = text("""SELECT id, topic, is_secret FROM areas""")
     for result in Database().fetch_all(sql):
-        area = Area(result["topic"], result["id"])
+        area = Area(result["topic"], result["is_secret"], result["id"])
         areas.append(area)
 
     return areas
