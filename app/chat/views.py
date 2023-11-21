@@ -16,7 +16,9 @@ def index():
             return render_template("index.html", areas=helpers.get_areas(), turnstile_error=True)
         if not helpers.is_valid_area_topic(request.form["topic"]):
             return render_template("index.html", areas=helpers.get_areas(), error=True)
-        Area(request.form["topic"]).insert()
+        
+        new_area = Area(request.form["topic"])
+        new_area.insert()
 
     return render_template("index.html", areas=helpers.get_areas())
 
@@ -28,9 +30,12 @@ def view_area(area_id):
             return render_template("area.html", area=Area.create_from_db(area_id), turnstile_error=True)
         if not helpers.is_valid_thread_title(request.form["title"]):
             return render_template("area.html", area=Area.create_from_db(area_id), error=True)
-        thread_id = Thread(area_id, request.form["title"]).insert().id
+        
+        new_thread = Thread(area_id, request.form["title"])
+        new_thread.insert()
 
-        Message(thread_id, session["user_id"], request.form["message"]).insert()
+        new_message = Message(new_thread.id, session["user_id"], request.form["message"])
+        new_message.insert()
 
     return render_template("area.html", area=Area.create_from_db(area_id))
 
@@ -42,7 +47,9 @@ def view_thread(thread_id):
             return render_template("thread.html", thread=Thread.create_from_db(thread_id), turnstile_error=True)
         if not helpers.is_valid_message(request.form["message"]):
             return render_template("thread.html", thread=Thread.create_from_db(thread_id), error=True)
-        Message(thread_id, session["user_id"], request.form["message"]).insert()
+        
+        new_message = Message(thread_id, session["user_id"], request.form["message"])
+        new_message.insert()
 
     return render_template("thread.html", thread=Thread.create_from_db(thread_id))
     
@@ -53,11 +60,15 @@ def login():
     if request.method == "POST":
         if not helpers.verify_turnstile(request):
             return render_template("login.html", turnstile_error=True)
+        
         user_id = helpers.verify_login(request)
+
         if not user_id:
             return render_template("login.html", error=True)
+        
         session["user_id"] = user_id
         session["username"] = request.form["username"]
+
         return redirect(url_for("chat.index"))
     
 @chat_blueprint.route("/register", methods=['GET', 'POST'])
@@ -74,7 +85,8 @@ def register():
         if request.form["password"] != request.form["confirm_password"]:
             return render_template("register.html", error="Passwords don't match")
 
-        User(request.form["username"], request.form["password"]).insert()
+        new_user = User(request.form["username"], request.form["password"])
+        new_user.insert()
 
         return redirect(url_for("chat.login"))
     
