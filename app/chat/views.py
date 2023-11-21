@@ -80,6 +80,8 @@ def register():
             return render_template("register.html", turnstile_error=True)
         if helpers.username_exists(request.form["username"]):
             return render_template("register.html", error="Username taken")
+        if not helpers.is_valid_username(request.form["username"]):
+            return render_template("register.html", error="Invalid username")
         if not helpers.is_password_secure(request.form["password"]):
             return render_template("register.html", error="Password is too weak")   
         if request.form["password"] != request.form["confirm_password"]:

@@ -102,3 +102,12 @@ def is_valid_thread_title(title):
 
 def is_valid_message(message):
     return len(message) > 0 and len(message) < 1024
+
+def is_valid_username(username):
+    if len(username) <= 0 or len(username) > 32:
+        return False
+    
+    if not username.isalnum():
+        return False
+
+    return True
