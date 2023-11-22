@@ -18,12 +18,12 @@ def index():
             return render_template("index.html", areas=helpers.get_areas(), error=True)
         
         is_secret = False
-        if session["is_admin"] and request.form.get("is_secret", "") == "on":
+        if session["is_admin"] == "True" and request.form.get("is_secret", "") == "on":
             is_secret = True
         new_area = Area(request.form["topic"], is_secret)
         new_area.insert()
 
-    return render_template("index.html", areas=helpers.get_areas(), is_admin=session["is_admin"])
+    return render_template("index.html", areas=helpers.get_areas(), is_admin=session["is_admin"] == "True")
 
 @chat_blueprint.route("/area/<int:area_id>", methods=['GET', 'POST'])
 @login_required
@@ -42,10 +42,11 @@ def view_area(area_id):
 
     area = Area.create_from_db(area_id)
     access_list = []
-    if area.is_secret and session["is_admin"]:
+    if area.is_secret and session["is_admin"] == "True":
+        print(session["is_admin"])
         access_list = helpers.get_access_list(area.id)
 
-    return render_template("area.html", area=area, is_admin=session["is_admin"], access_list=access_list)
+    return render_template("area.html", area=area, is_admin=session["is_admin"] == "True", access_list=access_list)
 
 @chat_blueprint.route("/thread/<int:thread_id>", methods=['GET', 'POST'])
 @login_required
@@ -93,7 +94,7 @@ def login():
         session["username"] = request.form["username"]
 
         if is_admin:
-            session["is_admin"] = True
+            session["is_admin"] = "True"
 
         return redirect(url_for("chat.index"))
     
