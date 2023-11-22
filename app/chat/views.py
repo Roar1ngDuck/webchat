@@ -40,7 +40,12 @@ def view_area(area_id):
         new_message = Message(new_thread.id, session["user_id"], request.form["message"])
         new_message.insert()
 
-    return render_template("area.html", area=Area.create_from_db(area_id), is_admin=session["is_admin"])
+    area = Area.create_from_db(area_id)
+    access_list = []
+    if area.is_secret and session["is_admin"]:
+        access_list = helpers.get_access_list(area.id)
+
+    return render_template("area.html", area=area, is_admin=session["is_admin"], access_list=access_list)
 
 @chat_blueprint.route("/thread/<int:thread_id>", methods=['GET', 'POST'])
 @login_required

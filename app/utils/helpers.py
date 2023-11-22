@@ -119,3 +119,7 @@ def add_user_to_secret_area(username, area_id):
 def remove_user_from_secret_area(username, area_id):
     sql = text("""DELETE FROM secret_area_privileges WHERE area_id = :area_id AND user_id = (SELECT id FROM users WHERE username = :username)""")
     Database().insert_one(sql, {"area_id": area_id, "username": username}, False)
+
+def get_access_list(area_id):
+    sql = text("""SELECT u.username FROM secret_area_privileges s, users u WHERE s.area_id = :area_id AND s.user_id = u.id""")
+    return Database().fetch_all(sql, {"area_id": area_id})
