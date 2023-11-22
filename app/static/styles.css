@@ -390,3 +390,53 @@ main {
 .green-border {
     border: 1px solid rgb(114 228 139);
 }
+
+.custom-checkbox input {
+    display: none;
+}
+
+/* Custom checkbox design */
+.custom-checkbox label {
+    position: relative;
+    padding-left: 25px;
+    cursor: pointer;
+    display: inline-block;
+    color: #666;
+}
+
+/* Box for the custom checkbox */
+.custom-checkbox label:before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 20px;
+    height: 20px;
+    border: 1px solid rgb(62, 55, 117);
+    background-color: transparent;
+    transition: background-color 0.2s ease;
+}
+
+/* Checkmark style */
+.custom-checkbox label:after {
+    content: '';
+    position: absolute;
+    left: 6px;
+    top: 3px;
+    width: 6px;
+    height: 12px;
+    border: solid white;
+    border-width: 0 3px 3px 0;
+    transform: rotate(45deg);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+/* Style when the checkbox is checked */
+.custom-checkbox input:checked + label:before {
+    background-color: rgb(62, 55, 117);
+}
+
+.custom-checkbox input:checked + label:after {
+    opacity: 1;
+}

@@ -27,6 +27,14 @@
                 <label for="topicName">Topic:</label>
                 <input type="text" id="topicName" name="topic" required>
             </div>
+            {% if is_admin %}
+            <div class="form-group">
+                <div class="custom-checkbox">
+                    <input type="checkbox" id="is_secret" name="is_secret">
+                    <label for="is_secret">Secret</label>
+                </div>
+            </div>
+            {% endif %}
             <div class="cf-turnstile" data-sitekey="0x4AAAAAAANaDnjjlPmlyDNv"></div>
             <button type="submit" class="modern-button">Create</button>
         </form>

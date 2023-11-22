@@ -27,16 +27,16 @@ def username_exists(username):
 def verify_login(request):
     username = request.form["username"]
 
-    sql = text("""SELECT u.id, u.password FROM users u WHERE u.username = :username""")
+    sql = text("""SELECT u.id, u.password, is_admin FROM users u WHERE u.username = :username""")
     result = Database().fetch_one(sql, {"username" : username})
 
     if not result:
-        return None
+        return (None, None)
 
     if bcrypt.checkpw(request.form["password"].encode('utf-8'), result["password"].tobytes()):
-        return result["id"]
+        return (result["id"], result["is_admin"])
 
-    return None
+    return (None, None)
 
 def hash_password(password):
     return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())

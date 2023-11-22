@@ -17,10 +17,13 @@ def index():
         if not helpers.is_valid_area_topic(request.form["topic"]):
             return render_template("index.html", areas=helpers.get_areas(), error=True)
         
-        new_area = Area(request.form["topic"])
+        is_secret = False
+        if session["is_admin"] and request.form.get("is_secret", "") == "on":
+            is_secret = True
+        new_area = Area(request.form["topic"], is_secret)
         new_area.insert()
 
-    return render_template("index.html", areas=helpers.get_areas())
+    return render_template("index.html", areas=helpers.get_areas(), is_admin=session["is_admin"])
 
 @chat_blueprint.route("/area/<int:area_id>", methods=['GET', 'POST'])
 @login_required
@@ -61,13 +64,15 @@ def login():
         if not helpers.verify_turnstile(request):
             return render_template("login.html", turnstile_error=True)
         
-        user_id = helpers.verify_login(request)
+        user_id, is_admin = helpers.verify_login(request)
 
         if not user_id:
             return render_template("login.html", error=True)
         
         session["user_id"] = user_id
         session["username"] = request.form["username"]
+        if is_admin:
+            session["is_admin"] = True
 
         return redirect(url_for("chat.index"))
     
