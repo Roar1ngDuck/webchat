@@ -14,7 +14,8 @@ def get_areas(user_id):
         SELECT a.id, a.topic, a.is_secret
         FROM areas a
         LEFT JOIN secret_area_privileges sap ON a.id = sap.area_id AND sap.user_id = :user_id
-        WHERE a.is_secret = false OR sap.user_id IS NOT NULL
+        INNER JOIN users u ON u.id = :user_id
+        WHERE u.is_admin = true OR a.is_secret = false OR sap.user_id IS NOT NULL
     """)
     for result in Database().fetch_all(sql, {"user_id": user_id}):
         area = Area(result["topic"], result["is_secret"], result["id"])

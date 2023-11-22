@@ -16,7 +16,8 @@ class Area:
         SELECT a.topic, a.is_secret
         FROM areas a
         LEFT JOIN secret_area_privileges sap ON a.id = sap.area_id AND sap.user_id = :user_id
-        WHERE a.id = :area_id AND (a.is_secret = false OR sap.user_id IS NOT NULL)
+        INNER JOIN users u ON u.id = :user_id
+        WHERE a.id = :area_id AND (u.is_admin = true OR a.is_secret = false OR sap.user_id IS NOT NULL)
         """)
 
         result = Database().fetch_one(sql, {"area_id": area_id, "user_id": user_id})
