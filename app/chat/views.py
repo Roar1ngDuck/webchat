@@ -95,6 +95,8 @@ def login():
 
         if is_admin:
             session["is_admin"] = "True"
+        else:
+            session["is_admin"] = "False"
 
         return redirect(url_for("chat.index"))
     
