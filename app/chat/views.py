@@ -42,7 +42,8 @@ def view_area(area_id):
         new_message = Message(new_thread.id, session["user_id"], request.form["message"])
         new_message.insert()
 
-    area = Area.create_from_db(area_id)
+    user_id = session["user_id"]
+    area = Area.create_from_db(area_id, user_id)
     access_list = []
     if area.is_secret and session["is_admin"] == "True":
         print(session["is_admin"])

@@ -11,11 +11,21 @@ class Area:
         self.id = id
 
     @classmethod
-    def create_from_db(cls, id):
-        sql = text("""SELECT a.topic, a.is_secret FROM areas a WHERE a.id = :area_id""")
-        result = Database().fetch_one(sql, {"area_id" : id})
-        instance = cls(result["topic"], result["is_secret"], id)
-        return instance
+    def create_from_db(cls, area_id, user_id):
+        sql = text("""
+        SELECT a.topic, a.is_secret
+        FROM areas a
+        LEFT JOIN secret_area_privileges sap ON a.id = sap.area_id AND sap.user_id = :user_id
+        WHERE a.id = :area_id AND (a.is_secret = false OR sap.user_id IS NOT NULL)
+        """)
+
+        result = Database().fetch_one(sql, {"area_id": area_id, "user_id": user_id})
+
+        if result:
+            instance = cls(result["topic"], result["is_secret"], area_id)
+            return instance
+        else:
+            return None
     
     @property
     def thread_count(self):
