@@ -6,13 +6,11 @@
 {% endblock %}
 
 {% block navbar %}
-{% if is_admin %}
 <!-- Add Thread Button -->
 <button id="createAreaBtn" class="modern-button green-border">New Thread</button>
-{% if area.is_secret %}
+{% if is_admin and area.is_secret %}
 <!-- Manage Area Access Button -->
 <button id="manageAreaAccessBtn" class="modern-button green-border">Manage Area Access</button>
-{% endif %}
 {% endif %}
 {% endblock %}
 

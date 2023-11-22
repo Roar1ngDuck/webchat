@@ -1,8 +1,11 @@
 {% extends "base.html" %}
 
 {% block navbar %}
+
+{% if is_admin %}
 <!-- Add Area Button -->
 <button id="createAreaBtn" class="modern-button">New Area</button>
+{% endif %}
 {% endblock %}
 
 {% block content %}
