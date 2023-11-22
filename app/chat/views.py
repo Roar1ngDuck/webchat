@@ -23,7 +23,9 @@ def index():
         new_area = Area(request.form["topic"], is_secret)
         new_area.insert()
 
-    return render_template("index.html", areas=helpers.get_areas(), is_admin=session["is_admin"] == "True")
+    user_id = session["user_id"]
+
+    return render_template("index.html", areas=helpers.get_areas(user_id), is_admin=session["is_admin"] == "True")
 
 @chat_blueprint.route("/area/<int:area_id>", methods=['GET', 'POST'])
 @login_required

@@ -7,11 +7,16 @@ from ..utils.db import Database
 import requests
 from os import getenv
 
-def get_areas():
+def get_areas(user_id):
     areas:list[Area] = []
 
-    sql = text("""SELECT id, topic, is_secret FROM areas""")
-    for result in Database().fetch_all(sql):
+    sql = text("""
+        SELECT a.id, a.topic, a.is_secret
+        FROM areas a
+        LEFT JOIN secret_area_privileges sap ON a.id = sap.area_id AND sap.user_id = :user_id
+        WHERE a.is_secret = false OR sap.user_id IS NOT NULL
+    """)
+    for result in Database().fetch_all(sql, {"user_id": user_id}):
         area = Area(result["topic"], result["is_secret"], result["id"])
         areas.append(area)
 
