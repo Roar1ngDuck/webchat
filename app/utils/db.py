@@ -76,8 +76,9 @@ class Database:
         with self.engine.connect() as connection:
             return next(connection.execute(sql, params).mappings())
         
-    def insert_one(self, sql, params=None):
+    def insert_one(self, sql, params=None, return_result = True):
         with self.engine.connect() as connection:
             with connection.begin():
                 result = connection.execute(sql, params)
-                return next(result.mappings())
+                if return_result:
+                    return next(result.mappings())

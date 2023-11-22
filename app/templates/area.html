@@ -10,6 +10,9 @@
 <!-- Add Thread Button -->
 <button id="createAreaBtn" class="modern-button green-border">New Thread</button>
 {% if area.is_secret %}
+<!-- Manage Area Access Button -->
+<button id="manageAreaAccessBtn" class="modern-button green-border">Manage Area Access</button>
+{% endif %}
 {% endif %}
 {% endblock %}
 
@@ -27,7 +30,7 @@
 </section>
 <div id="createAreaModal" class="modal">
     <div class="modal-content">
-        <span class="close-btn">&times;</span>
+        <span class="close-btn" id="close-btn-create-area">&times;</span>
         <form action="{{ url_for('chat.view_area', area_id=area.id) }}" method="post" id="createAreaForm">
             <h2>Create New Thread</h2>
             <div class="form-group">
@@ -41,6 +44,31 @@
         </form>
     </div>
 </div>
+<!-- Manage Area Access Modal -->
+<div id="manageAreaAccessModal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" id="close-btn-manage-area">&times;</span>
+        <form action="{{ url_for('chat.manage_area_access') }}" method="post" id="manageAreaAccessForm">
+            <h2>Manage Area Access</h2>
+            <div class="form-group">
+                <label for="username">Username:</label>
+                <input type="text" id="username" name="username">
+            </div>
+            <input type="hidden" name="area_id" value="{{ area.id }}">
+            <button type="submit" name="action" value="add" class="modern-button">Add User</button>
+            <button type="submit" name="action" value="remove" class="modern-button">Remove User</button>
+            <div id="userList">
+                <h3>Users with Access</h3>
+                <ul>
+                    {% for user in access_list %}
+                    <li>{{ user.username }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </form>
+    </div>
+</div>
+
 <script>
     // Get the modal
     var modal = document.getElementById("createAreaModal");
@@ -49,7 +77,7 @@
     var btn = document.getElementById("createAreaBtn");
 
     // Get the <span> element that closes the modal
-    var span = document.getElementsByClassName("close-btn")[0];
+    var span = document.getElementById("close-btn-create-area");
 
     // When the user clicks the button, open the modal 
     btn.onclick = function() {
@@ -65,6 +93,37 @@
     window.onclick = function(event) {
         if (event.target == modal) {
             modal.style.display = "none";
+        }
+    }
+</script>
+<script>
+    // Existing modal script
+
+    // Get the manage area access modal
+    var manageModal = document.getElementById("manageAreaAccessModal");
+
+    // Get the button that opens the manage area access modal
+    var manageBtn = document.getElementById("manageAreaAccessBtn");
+
+    // Get the <span> element that closes the manage area access modal
+    var span = document.getElementById("close-btn-manage-area");
+
+    // When the user clicks the button, open the manage area access modal 
+    manageBtn.onclick = function() {
+        manageModal.style.display = "block";
+    }
+
+    // When the user clicks on <span> (x), close the manage area access modal
+    span.onclick = function() {
+        manageModal.style.display = "none";
+    }
+
+    // Reuse the existing window.onclick function to include the new modal
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            modal.style.display = "none";
+        } else if (event.target == manageModal) {
+            manageModal.style.display = "none";
         }
     }
 </script>

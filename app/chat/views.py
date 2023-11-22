@@ -56,6 +56,21 @@ def view_thread(thread_id):
 
     return render_template("thread.html", thread=Thread.create_from_db(thread_id))
     
+@chat_blueprint.route("/manage_area_access", methods=['POST'])
+@login_required
+def manage_area_access():
+    if request.method == "POST":
+        username = request.form["username"]
+        area_id = request.form["area_id"]
+        action = request.form["action"]
+
+        if action == "add":
+            helpers.add_user_to_secret_area(username, area_id)
+        elif action == "remove":
+            helpers.remove_user_from_secret_area(username, area_id)
+
+        return redirect(url_for("chat.view_area", area_id=request.form["area_id"]))
+
 @chat_blueprint.route("/login", methods=['GET', 'POST'])
 def login():
     if request.method == "GET":
@@ -71,6 +86,7 @@ def login():
         
         session["user_id"] = user_id
         session["username"] = request.form["username"]
+
         if is_admin:
             session["is_admin"] = True
 
