@@ -8,8 +8,15 @@ import requests
 from os import getenv
 
 def get_areas(user_id):
+    """
+    Fetches a list of discussion areas accessible to the given user.
+    It includes areas open to all users and secret areas for which the user has privileges.
+    This function supports access control by filtering areas based on user privileges and admin status.
+    """
+
     areas:list[Area] = []
 
+    # Construct SQL query to fetch areas based on user privileges and admin status.
     sql = text("""
         SELECT a.id, a.topic, a.is_secret
         FROM areas a
@@ -17,6 +24,8 @@ def get_areas(user_id):
         INNER JOIN users u ON u.id = :user_id
         WHERE u.is_admin = true OR a.is_secret = false OR sap.user_id IS NOT NULL
     """)
+
+    # Query the database and create Area objects for each result.
     for result in Database().fetch_all(sql, {"user_id": user_id}):
         area = Area(result["topic"], result["is_secret"], result["id"])
         areas.append(area)
@@ -24,59 +33,80 @@ def get_areas(user_id):
     return areas
 
 def username_exists(username):
-    sql = text("""SELECT COUNT(*) FROM users u WHERE u.username = :username""")
-    if Database().fetch_one(sql, {"username" : username})["count"] == 0:
-        return False
+    """
+    Checks if the given username already exists in the database.
+    This is used to prevent duplicate usernames during registration.
+    """
 
-    return True
+    # Query the database and return a boolean based on the existence of the username.
+    sql = text("""SELECT COUNT(*) FROM users u WHERE u.username = :username""")
+    return Database().fetch_one(sql, {"username" : username})["count"] != 0
 
 def verify_login(request):
-    username = request.form["username"]
+    """
+    Verifies user credentials against the database during login.
+    Utilizes bcrypt for secure password comparison.
+    Returns user ID and admin status if credentials are valid.
+    """
 
+    # Query to fetch user data for authentication.
+    username = request.form["username"]
     sql = text("""SELECT u.id, u.password, is_admin FROM users u WHERE u.username = :username""")
     result = Database().fetch_one(sql, {"username" : username})
 
     if not result:
         return (None, None)
 
+    # Check password validity with bcrypt and return user details if authentication succeeds.
     if bcrypt.checkpw(request.form["password"].encode('utf-8'), result["password"].tobytes()):
         return (result["id"], result["is_admin"])
 
     return (None, None)
 
 def hash_password(password):
+    """
+    Hashes a password using bcrypt.
+    This is a security measure to ensure that stored passwords are not in plain text.
+    """
+
     return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
 
 def is_password_secure(password):
+    """
+    Evaluates the security of a password using the zxcvbn library.
+    Ensures users choose strong passwords.
+    """
+
     return zxcvbn(password)["score"] >= 4
 
 def verify_turnstile(request):
+    """
+    Verifies the Turnstile (CAPTCHA) response to prevent automated submissions.
+    Enhances security by mitigating bot-based attacks and spam.
+    """
+
     if getenv("USE_TURNSTILE") != "True":
         return True
 
+    # Prepare data for Turnstile verification request.
     turnstile_response = request.form.get("cf-turnstile-response", "")
     remote_ip = request.form.get("CF-Connecting-IP", "")
-
     data = {
     'secret': getenv("TURNSTILE_SECRET"),
     'response': turnstile_response,
     'remoteip': remote_ip
     }
 
-    response = requests.post('https://challenges.cloudflare.com/turnstile/v0/siteverify', data=data)
+    # Send verification request and interpret the outcome.
+    response = requests.post('https://challenges.cloudflare.com/turnstile/v0/siteverify', data=data).json()
 
-    if not response.ok:
-        return False
-
-    outcome = response.json()
-
-    if outcome.get('success'):
-        return True
-    
-    return False
-        
+    return response.get('success')
 
 def time_ago(date):
+    """
+    Converts a datetime object to a human-readable time-ago format.
+    """
+
     now = datetime.now()
     diff = now - date
 
@@ -101,15 +131,35 @@ def time_ago(date):
         return f"{int(years)} years ago"
     
 def is_valid_area_topic(topic):
+    """
+    Validates the topic of a discussion area.
+    Ensures that the topic name adheres to predefined length constraints.
+    """
+
     return len(topic) > 0 and len(topic) < 64
 
 def is_valid_thread_title(title):
+    """
+    Validates the title of a thread.
+    Ensures that the thread title adheres to predefined length constraints.
+    """
+
     return len(title) > 0 and len(title) < 64
 
 def is_valid_message(message):
+    """
+    Checks if a message meets length requirements.
+    Prevents overly verbose or empty messagess.
+    """
+
     return len(message) > 0 and len(message) < 1024
 
 def is_valid_username(username):
+    """
+    Validates a username based on length and character composition.
+    Ensures usernames are of an appropriate length and contain only alphanumeric characters.
+    """
+
     if len(username) <= 0 or len(username) > 32:
         return False
     
@@ -119,13 +169,28 @@ def is_valid_username(username):
     return True
 
 def add_user_to_secret_area(username, area_id):
+    """
+    Grants a user access to a secret discussion area.
+    Allows administrators to manage user access.
+    """
+
     sql = text("""INSERT INTO secret_area_privileges (area_id, user_id) VALUES (:area_id, (SELECT id FROM users WHERE username = :username))""")
     Database().insert_one(sql, {"username" : username, "area_id" : area_id}, False)
 
 def remove_user_from_secret_area(username, area_id):
+    """
+    Revokes a user's access to a secret discussion area.
+    Allows administrators to manage user access.
+    """
+
     sql = text("""DELETE FROM secret_area_privileges WHERE area_id = :area_id AND user_id = (SELECT id FROM users WHERE username = :username)""")
     Database().insert_one(sql, {"area_id": area_id, "username": username}, False)
 
 def get_access_list(area_id):
+    """
+    Retrieves a list of users who have access to a specific secret area.
+    Useful for admins to view and manage access to restricted sections.
+    """
+
     sql = text("""SELECT u.username FROM secret_area_privileges s, users u WHERE s.area_id = :area_id AND s.user_id = u.id""")
     return Database().fetch_all(sql, {"area_id": area_id})
