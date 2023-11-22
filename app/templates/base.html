@@ -15,7 +15,7 @@
         <div class="header-container">{% block title %}<a class="header-link-home" href="{{ url_for('chat.index') }}">WebChat</a>{% endblock %}</div>
         <div class="navbar-container">
             {% if "user_id" in session %}
-            <span  class="username-display">Logged in as <span class="username-highlight">{{ session["username"] }}</span></span>
+            <span  class="username-display">Logged in as {% if session["is_admin"] == "True" %}administrator {% endif %}<span class="username-highlight">{{ session["username"] }}</span></span>
             <a href="{{ url_for('chat.logout') }}" class="logout-button">Logout</a>
             {% block navbar %}{% endblock %}
             {% endif %}
