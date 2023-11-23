@@ -440,3 +440,8 @@ main {
 .custom-checkbox input:checked + label:after {
     opacity: 1;
 }
+
+.cf-turnstile {
+    width: 300px;
+    height: 75px;
+}
