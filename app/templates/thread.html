@@ -16,6 +16,11 @@
                 <strong>{{ message.sender_name }}</strong>
             </header>
             <p>{{ message.text }}</p>
+            {% if message.sender == session["user_id"] %}
+            <form action="{{ url_for('chat.delete_message', message_id=message.id, thread_id=thread.id) }}" method="post">
+                <button type="submit" class="modern-button">Delete</button>
+            </form>
+            {% endif %}
         </article>
         {% else %}
         <p>No messages yet.</p>

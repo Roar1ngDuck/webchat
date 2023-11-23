@@ -194,3 +194,11 @@ def get_access_list(area_id):
 
     sql = text("""SELECT u.username FROM secret_area_privileges s, users u WHERE s.area_id = :area_id AND s.user_id = u.id""")
     return Database().fetch_all(sql, {"area_id": area_id})
+
+def delete_message(message_id, user_id):
+    """
+    Deletes a message from the database.
+    """
+
+    sql = text("""DELETE FROM messages m WHERE m.id = :message_id AND m.sender = :user_id""")
+    Database().execute(sql, {"message_id": message_id, "user_id": user_id}, False)

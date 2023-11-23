@@ -113,6 +113,14 @@ def manage_area_access():
         # Redirect back to the area management page after updating access controls.
         return redirect(url_for("chat.view_area", area_id=request.form["area_id"]))
 
+@chat_blueprint.route("/delete_message/<int:message_id>/<int:thread_id>", methods=['POST'])
+@login_required
+def delete_message(message_id, thread_id):
+    # Handle POST request to delete a message.
+    helpers.delete_message(message_id, session["user_id"])
+
+    # Redirect back to the thread view.
+    return redirect(url_for("chat.view_thread", thread_id=thread_id))
 
 @chat_blueprint.route("/login", methods=['GET', 'POST'])
 def login():
