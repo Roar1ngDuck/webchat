@@ -1,9 +1,11 @@
 from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
 from os import getenv
+from dotenv import load_dotenv
 from .chat.views import chat_blueprint
 
 def create_app():
+    load_dotenv()
+
     app = Flask(__name__)
     app.secret_key = getenv("SECRET_KEY")
     
