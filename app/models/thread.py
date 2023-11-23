@@ -19,7 +19,7 @@ class Thread:
 SELECT m.id, t.title, u.id as sender_id, u.username, m.text, m.sent_time, t.area, a.topic FROM messages m 
 JOIN users u ON m.sender = u.id 
 JOIN threads t ON m.thread = t.id 
-JOIN areas a on t.area = a.id WHERE m.thread = :thread_id""")
+JOIN areas a on t.area = a.id WHERE m.thread = :thread_id ORDER BY m.sent_time""")
         instance = None
         for row in Database().fetch_all(sql, {"thread_id" : id}):
             if not instance:
