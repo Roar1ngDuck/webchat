@@ -33,6 +33,9 @@ def index():
         new_area = Area(request.form["topic"], is_secret)
         new_area.insert()
 
+        # Redirect back to home page after creating new area.
+        return redirect(url_for("chat.index"))
+
     # Display areas based on user credentials and area access rights.
     user_id = session["user_id"]
     return render_template("index.html", areas=helpers.get_areas(user_id), is_admin=session["is_admin"] == "True")
@@ -57,6 +60,9 @@ def view_area(area_id):
         new_thread.insert()
         new_message = Message(new_thread.id, session["user_id"], request.form["message"])
         new_message.insert()
+
+        # Redirect back to the area page after creating a new thread.
+        return redirect(url_for("chat.view_area", area_id=area_id))
 
     # Retrieve user_id from session for access control and personalization.
     user_id = session["user_id"]
@@ -89,6 +95,9 @@ def view_thread(thread_id):
          # Create and insert the new message into the thread.
         new_message = Message(thread_id, session["user_id"], request.form["message"])
         new_message.insert()
+
+        # Redirect back to the thread page after adding a new message.
+        return redirect(url_for("chat.view_thread", thread_id=thread_id))
 
     # Render the thread page, including all its messages.
     return render_template("thread.html", thread=Thread.create_from_db(thread_id))
