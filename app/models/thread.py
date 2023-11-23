@@ -42,5 +42,5 @@ JOIN areas a on t.area = a.id WHERE m.thread = :thread_id""")
     
     def insert(self):
         sql = text("""INSERT INTO threads (area, title) VALUES (:area, :title) RETURNING id""")
-        self.id = self.db.insert_one(sql, {"area" : self.area, "title" : self.title})["id"]
+        self.id = self.db.execute(sql, {"area" : self.area, "title" : self.title})["id"]
         return self

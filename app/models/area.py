@@ -57,5 +57,5 @@ class Area:
     
     def insert(self):
         sql = text("""INSERT INTO areas (topic, is_secret) VALUES (:topic, :is_secret) RETURNING id""")
-        self.id = self.db.insert_one(sql, {"topic" : self.topic, "is_secret" : self.is_secret})["id"]
+        self.id = self.db.execute(sql, {"topic" : self.topic, "is_secret" : self.is_secret})["id"]
         return self

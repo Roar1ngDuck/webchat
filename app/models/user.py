@@ -11,4 +11,4 @@ class User:
 
     def insert(self):
         sql = text("""INSERT INTO users (username, password, is_admin) VALUES (:username, :password, :is_admin) RETURNING id""")
-        self.id = self.db.insert_one(sql, {"username" : self.username, "password" : self.password, "is_admin" : self.is_admin})["id"]
+        self.id = self.db.execute(sql, {"username" : self.username, "password" : self.password, "is_admin" : self.is_admin})["id"]

@@ -175,7 +175,7 @@ def add_user_to_secret_area(username, area_id):
     """
 
     sql = text("""INSERT INTO secret_area_privileges (area_id, user_id) VALUES (:area_id, (SELECT id FROM users WHERE username = :username))""")
-    Database().insert_one(sql, {"username" : username, "area_id" : area_id}, False)
+    Database().execute(sql, {"username" : username, "area_id" : area_id}, False)
 
 def remove_user_from_secret_area(username, area_id):
     """
@@ -184,7 +184,7 @@ def remove_user_from_secret_area(username, area_id):
     """
 
     sql = text("""DELETE FROM secret_area_privileges WHERE area_id = :area_id AND user_id = (SELECT id FROM users WHERE username = :username)""")
-    Database().insert_one(sql, {"area_id": area_id, "username": username}, False)
+    Database().execute(sql, {"area_id": area_id, "username": username}, False)
 
 def get_access_list(area_id):
     """
