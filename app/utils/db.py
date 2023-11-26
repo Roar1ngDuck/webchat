@@ -12,7 +12,7 @@ class Database:
             if cls._instance is None:
                 cls._instance = super(Database, cls).__new__(cls)
                 cls._instance.engine = create_engine(getenv("DB_URL"))
-                if getenv("ENV") == "TEST":
+                if getenv("ENV") == "TEST" or True:
                     cls._instance._drop_tables()  # Drop tables if in test environment
                 cls._instance._initialize_tables()
                 cls._instance._create_admin_user()
@@ -46,7 +46,7 @@ class Database:
         );
         CREATE TABLE IF NOT EXISTS messages (
             id SERIAL PRIMARY KEY,
-            thread integer NOT NULL REFERENCES threads(id),
+            thread integer NOT NULL REFERENCES threads(id) ON DELETE CASCADE,
             sender integer NOT NULL REFERENCES users(id),
             text TEXT NOT NULL,
             sent_time TIMESTAMP WITHOUT TIME ZONE DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC')

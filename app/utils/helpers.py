@@ -195,10 +195,28 @@ def get_access_list(area_id):
     sql = text("""SELECT u.username FROM secret_area_privileges s, users u WHERE s.area_id = :area_id AND s.user_id = u.id""")
     return Database().fetch_all(sql, {"area_id": area_id})
 
-def delete_message(message_id, user_id):
+def delete_message(thread_id, message_id, user_id):
     """
-    Deletes a message from the database.
+    Deletes a message from the database and also deletes the thread if the message is the only one in the thread.
     """
+
+    delete_thread_sql = text("""
+        DELETE FROM threads
+        WHERE id = :thread_id AND (
+            SELECT COUNT(*) FROM messages WHERE thread = (
+                SELECT thread FROM messages WHERE id = :message_id
+            )
+        ) = 1
+    """)
+    Database().execute(delete_thread_sql, {"thread_id": thread_id, "message_id": message_id}, False)
 
     sql = text("""DELETE FROM messages m WHERE m.id = :message_id AND m.sender = :user_id""")
     Database().execute(sql, {"message_id": message_id, "user_id": user_id}, False)
+
+def delete_thread(thread_id):
+    """
+    Deletes a thread from the database.
+    """
+
+    sql = text("""DELETE FROM threads WHERE id = :thread_id""")
+    Database().execute(sql, {"thread_id": thread_id}, False)
