@@ -99,8 +99,11 @@ def view_thread(thread_id):
         # Redirect back to the thread page after adding a new message.
         return redirect(url_for("chat.view_thread", thread_id=thread_id))
 
-    # Render the thread page, including all its messages.
-    return render_template("thread.html", thread=Thread.create_from_db(thread_id))
+    # Render the thread page, including all its messages. If thread doesn't exist, redirect back to home page.
+    thread = Thread.create_from_db(thread_id)
+    if thread == None:
+        return redirect(url_for("chat.index"))
+    return render_template("thread.html", thread=thread)
     
 
 @chat_blueprint.route("/manage_area_access", methods=['POST'])
@@ -126,7 +129,7 @@ def manage_area_access():
 @login_required
 def delete_message(message_id, thread_id):
     # Handle POST request to delete a message.
-    helpers.delete_message(message_id, session["user_id"])
+    helpers.delete_message(thread_id, message_id, session["user_id"])
 
     # Redirect back to the thread view.
     return redirect(url_for("chat.view_thread", thread_id=thread_id))
