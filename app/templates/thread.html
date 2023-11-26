@@ -12,7 +12,7 @@
         {% for message in thread.messages %}
         <article class="message">
             <header>
-                <time>{{ message.sent_time }}</time>
+                <time>{{ message.sent_time_ago }}</time>
                 <strong>{{ message.sender_name }}</strong>
             </header>
             <p>{{ message.text }}</p>

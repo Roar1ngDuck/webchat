@@ -1,6 +1,7 @@
 from datetime import datetime
 from sqlalchemy import text
 from ..utils.db import Database
+from ..utils import helpers
 
 class Message:
     def __init__(self, thread, sender, text, message_id = None, thread_title = None, sender_name = None, sent_time = None):
@@ -15,6 +16,10 @@ class Message:
         self.id = message_id
         self.thread_title = thread_title
         self.sender_name = sender_name
+
+    @property
+    def sent_time_ago(self):
+        return helpers.time_ago(self.sent_time)
 
     def insert(self):
         sql = text("""INSERT INTO messages (thread, sender, text, sent_time) VALUES (:thread, :sender, :text, :sent_time) RETURNING id""")
