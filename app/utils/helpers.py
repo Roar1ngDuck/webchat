@@ -85,14 +85,14 @@ def verify_turnstile(request):
     Enhances security by mitigating bot-based attacks and spam.
     """
 
-    if getenv("USE_TURNSTILE") != "True":
+    if getenv("USE_TURNSTILE", "") != "True":
         return True
 
     # Prepare data for Turnstile verification request.
     turnstile_response = request.form.get("cf-turnstile-response", "")
     remote_ip = request.form.get("CF-Connecting-IP", "")
     data = {
-    'secret': getenv("TURNSTILE_SECRET"),
+    'secret': getenv("TURNSTILE_SECRET", ""),
     'response': turnstile_response,
     'remoteip': remote_ip
     }
@@ -220,3 +220,6 @@ def delete_thread(thread_id):
 
     sql = text("""DELETE FROM threads WHERE id = :thread_id""")
     Database().execute(sql, {"thread_id": thread_id}, False)
+
+def get_turnstile_sitekey():
+    return getenv("TURNSTILE_SITEKEY", "")

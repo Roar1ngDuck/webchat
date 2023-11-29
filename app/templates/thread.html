@@ -28,7 +28,7 @@
     </section>
     <form action="{{ url_for('chat.view_thread', thread_id=thread.id) }}" method="post" id="message-form">
         <textarea name="message" rows="5" required></textarea>
-        <div class="cf-turnstile" data-sitekey="0x4AAAAAAANaDnjjlPmlyDNv"></div>
+        <div class="cf-turnstile" data-sitekey="{{ turnstile_sitekey }}"></div>
         <button type="submit">Send</button>
     </form>
 </div>

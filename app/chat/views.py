@@ -5,6 +5,7 @@ from ..models.thread import Thread
 from ..models.user import User
 from ..models.message import Message
 from ..utils.decorators import login_required
+from os import getenv
 
 # Blueprint setup for chat functionality, enabling modularization and URL prefixing.
 chat_blueprint = Blueprint('chat', __name__, url_prefix='/', static_folder='../static')
@@ -18,11 +19,11 @@ def index():
     if request.method == "POST":
         # Verify Turnstile (CAPTCHA) response to prevent automated submissions.
         if not helpers.verify_turnstile(request):
-            return render_template("index.html", areas=helpers.get_areas(), turnstile_error=True)
+            return render_template("index.html", areas=helpers.get_areas(), turnstile_sitekey = helpers.get_turnstile_sitekey(), turnstile_error=True)
         
         # Ensure that the area topic meets validation criteria (e.g., length, format).
         if not helpers.is_valid_area_topic(request.form["topic"]):
-            return render_template("index.html", areas=helpers.get_areas(), error=True)
+            return render_template("index.html", areas=helpers.get_areas(), turnstile_sitekey = helpers.get_turnstile_sitekey(), error=True)
         
         # Secret areas can only be created by admins, controlled by a checkbox in the form.
         is_secret = False
@@ -38,7 +39,7 @@ def index():
 
     # Display areas based on user credentials and area access rights.
     user_id = session["user_id"]
-    return render_template("index.html", areas=helpers.get_areas(user_id), is_admin=session["is_admin"] == "True")
+    return render_template("index.html", areas=helpers.get_areas(user_id), is_admin=session["is_admin"] == "True", turnstile_sitekey = helpers.get_turnstile_sitekey())
 
 
 # Route for viewing and interacting with a specific discussion area.
@@ -49,11 +50,11 @@ def view_area(area_id):
     if request.method == "POST":
         # Verify Turnstile (CAPTCHA) response to prevent automated submissions.
         if not helpers.verify_turnstile(request):
-            return render_template("area.html", area=Area.create_from_db(area_id), turnstile_error=True)
+            return render_template("area.html", area=Area.create_from_db(area_id), turnstile_sitekey = helpers.get_turnstile_sitekey(), turnstile_error=True)
         
         # Ensure that the thread title meets validation criteria (e.g., length, format).
         if not helpers.is_valid_thread_title(request.form["title"]):
-            return render_template("area.html", area=Area.create_from_db(area_id), error=True)
+            return render_template("area.html", area=Area.create_from_db(area_id), turnstile_sitekey = helpers.get_turnstile_sitekey(), error=True)
         
         # Create a new thread and its first message in the database.
         new_thread = Thread(area_id, request.form["title"])
@@ -75,7 +76,7 @@ def view_area(area_id):
         access_list = helpers.get_access_list(area.id)
 
     # Render the area page with appropriate data and access controls.
-    return render_template("area.html", area=area, is_admin=session["is_admin"] == "True", access_list=access_list)
+    return render_template("area.html", area=area, is_admin=session["is_admin"] == "True", access_list=access_list, turnstile_sitekey = helpers.get_turnstile_sitekey())
 
 
 # Route for viewing and interacting with a specific thread.
@@ -86,11 +87,11 @@ def view_thread(thread_id):
     if request.method == "POST":
         # Verify Turnstile (CAPTCHA) response to prevent automated submissions.
         if not helpers.verify_turnstile(request):
-            return render_template("thread.html", thread=Thread.create_from_db(thread_id), turnstile_error=True)
+            return render_template("thread.html", thread=Thread.create_from_db(thread_id), turnstile_sitekey = helpers.get_turnstile_sitekey(), turnstile_error=True)
         
         # Ensure that the message content meets validation criteria (e.g., length, format).
         if not helpers.is_valid_message(request.form["message"]):
-            return render_template("thread.html", thread=Thread.create_from_db(thread_id), error=True)
+            return render_template("thread.html", thread=Thread.create_from_db(thread_id), turnstile_sitekey = helpers.get_turnstile_sitekey(), error=True)
         
          # Create and insert the new message into the thread.
         new_message = Message(thread_id, session["user_id"], request.form["message"])
@@ -103,7 +104,7 @@ def view_thread(thread_id):
     thread = Thread.create_from_db(thread_id)
     if thread == None:
         return redirect(url_for("chat.index"))
-    return render_template("thread.html", thread=thread)
+    return render_template("thread.html", thread=thread, turnstile_sitekey = helpers.get_turnstile_sitekey())
     
 
 @chat_blueprint.route("/manage_area_access", methods=['POST'])
@@ -138,19 +139,19 @@ def delete_message(message_id, thread_id):
 def login():
     # Display login form on GET request.
     if request.method == "GET":
-        return render_template("login.html")
+        return render_template("login.html", turnstile_sitekey = helpers.get_turnstile_sitekey())
     
     # Handle login form submission on POST request.
     if request.method == "POST":
         # Verify Turnstile (CAPTCHA) response to prevent automated submissions.
         if not helpers.verify_turnstile(request):
-            return render_template("login.html", turnstile_error=True)
+            return render_template("login.html", turnstile_sitekey = helpers.get_turnstile_sitekey(), turnstile_error=True)
         
         # Verify user credentials. If valid, retrieve user_id and admin status.
         user_id, is_admin = helpers.verify_login(request)
 
         if not user_id:
-            return render_template("login.html", error=True)
+            return render_template("login.html", turnstile_sitekey = helpers.get_turnstile_sitekey(), error=True)
         
         # Set user session details on successful login.
         session["user_id"] = user_id
@@ -165,29 +166,29 @@ def login():
 def register():
     # Display registration form on GET request.
     if request.method == "GET":
-        return render_template("register.html")
+        return render_template("register.html", turnstile_sitekey = helpers.get_turnstile_sitekey())
     
     # Process registration form submission on POST request.
     if request.method == "POST":
         # Verify Turnstile (CAPTCHA) response to prevent automated submissions.
         if not helpers.verify_turnstile(request):
-            return render_template("register.html", turnstile_error=True)
+            return render_template("register.html", turnstile_sitekey = helpers.get_turnstile_sitekey(), turnstile_error=True)
         
         # Check if the username already exists in the database.
         if helpers.username_exists(request.form["username"]):
-            return render_template("register.html", error="Username taken")
+            return render_template("register.html", turnstile_sitekey = helpers.get_turnstile_sitekey(), error="Username taken")
         
         # Validate the chosen username against specific criteria (e.g., length, characters).
         if not helpers.is_valid_username(request.form["username"]):
-            return render_template("register.html", error="Invalid username")
+            return render_template("register.html", turnstile_sitekey = helpers.get_turnstile_sitekey(), error="Invalid username")
         
         # Ensure the password meets security standards, such as minimum complexity.
         if not helpers.is_password_secure(request.form["password"]):
-            return render_template("register.html", error="Password is too weak")  
+            return render_template("register.html", turnstile_sitekey = helpers.get_turnstile_sitekey(), error="Password is too weak")  
          
         # Confirm that the password and confirmation password fields match.
         if request.form["password"] != request.form["confirm_password"]:
-            return render_template("register.html", error="Passwords don't match")
+            return render_template("register.html", turnstile_sitekey = helpers.get_turnstile_sitekey(), error="Passwords don't match")
 
         # Create and insert a new user into the database.
         new_user = User(request.form["username"], request.form["password"])
