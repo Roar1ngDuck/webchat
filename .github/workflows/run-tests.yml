@@ -48,3 +48,6 @@ jobs:
         python -m pytest
       env:
         DB_URL: postgresql://postgres:postgres@postgres/webchat_test
+        SECRET_KEY: secret_key
+        ENV: TEST
+        ADMIN_PASSWORD: admin
