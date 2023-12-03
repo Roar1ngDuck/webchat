@@ -10,7 +10,7 @@
 
 <details>
   <summary><strong>Minimal Setup</strong></summary>
-  <p>This setup is for quickly getting the application running with a basic configuration:</p>
+  <p>This setup is for quickly getting the application running with a basic configuration. It is not a secure configuration and for a real deployment the settings should be customized.</p>
   <ol>
     <li>
       <strong>Clone the Repository:</strong>
@@ -25,6 +25,10 @@
       <strong>Run Docker Compose:</strong>
       <p>Use Docker Compose to start the application:</p>
       <pre><code>docker compose up</code></pre>
+    </li>
+    <li>
+      <strong>Access</strong>
+      <p>The app will be accessible at http://127.0.0.1:8001/ by default</p>
     </li>
   </ol>
 </details>
@@ -72,7 +76,12 @@ cp .env.test.example .env.test</code></pre>
       <pre><code>docker compose up</code></pre>
     </li>
     <li>
+      <strong>Access</strong>
+      <p>The app will be accessible at http://127.0.0.1:8001/ by default</p>
+    </li>
+    <li>
       <strong>Running Tests:</strong>
+      <p>For running tests the app needs to be executed without Docker. For this, make sure you have a postgres database which corresponds to the name in ".env.test", which by default is "webchat_test".</p>
       <p>To run the test suite, execute pytest:</p>
       <pre><code>pytest</code></pre>
     </li>
@@ -98,7 +107,7 @@ cp .env.test.example .env.test</code></pre>
 <h3>Messaging</h3>
 <ul>
   <li><strong>Posting Messages:</strong> Users can write a new message in an existing thread.</li>
-  <li><strong>Message Deletion and Editing:</strong> Users can delete and edit their messages.</li>
+  <li><strong>Message Deletion and Editing:</strong> Users can delete their messages and threads they have created.</li>
   <li><strong>Thread and Area Deletion:</strong> Administrators can delete threads and areas.</li>
 </ul>
 
