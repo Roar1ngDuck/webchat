@@ -56,7 +56,7 @@ def view_area(area_id):
             return render_template("area.html", area=Area.create_from_db(area_id), turnstile_sitekey = helpers.get_turnstile_sitekey(), error=True)
         
         # Create a new thread and its first message in the database.
-        new_thread = Thread(area_id, request.form["title"])
+        new_thread = Thread(area_id, request.form["title"], session["user_id"])
         new_thread.insert()
         new_message = Message(new_thread.id, session["user_id"], request.form["message"])
         new_message.insert()
@@ -103,7 +103,7 @@ def view_thread(thread_id):
     thread = Thread.create_from_db(thread_id)
     if thread == None:
         return redirect(url_for("chat.index"))
-    return render_template("thread.html", thread=thread, turnstile_sitekey = helpers.get_turnstile_sitekey())
+    return render_template("thread.html", thread=thread, turnstile_sitekey = helpers.get_turnstile_sitekey(), is_admin=session["is_admin"] == "True")
     
 
 @chat_blueprint.route("/manage_area_access", methods=['POST'])
@@ -124,6 +124,20 @@ def manage_area_access():
 
         # Redirect back to the area management page after updating access controls.
         return redirect(url_for("chat.view_area", area_id=request.form["area_id"]))
+
+@chat_blueprint.route("/delete_thread/<int:thread_id>", methods=['POST'])
+@login_required
+def delete_thread(thread_id):
+    thread = Thread.create_from_db(thread_id)
+
+     # Redirect with to index if not authorized
+    if session["user_id"] != thread.owner_id and session["is_admin"] != "True":
+        return redirect(url_for("chat.index"))
+
+    helpers.delete_thread(thread_id)
+
+    # Redirect to the area page after deletion
+    return redirect(url_for("chat.view_area", area_id=thread.area))
 
 @chat_blueprint.route("/delete_message/<int:message_id>/<int:thread_id>", methods=['POST'])
 @login_required

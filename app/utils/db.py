@@ -33,16 +33,17 @@ class Database:
             topic TEXT NOT NULL,
             is_secret boolean NOT NULL
         );
-        CREATE TABLE IF NOT EXISTS threads (
-            id SERIAL PRIMARY KEY,
-            area integer NOT NULL REFERENCES areas(id),
-            title TEXT NOT NULL
-        );
         CREATE TABLE IF NOT EXISTS users (
             id SERIAL PRIMARY KEY,
             username TEXT NOT NULL UNIQUE,
             password bytea NOT NULL,
             is_admin boolean NOT NULL
+        );
+        CREATE TABLE IF NOT EXISTS threads (
+            id SERIAL PRIMARY KEY,
+            area integer NOT NULL REFERENCES areas(id),
+            title TEXT NOT NULL,
+            owner_id integer NOT NULL REFERENCES users(id)
         );
         CREATE TABLE IF NOT EXISTS messages (
             id SERIAL PRIMARY KEY,

@@ -6,6 +6,14 @@
 <a class="header-smaller" href="{{ url_for('chat.view_thread', thread_id=thread.id) }}">{{ thread.title }}</a>
 {% endblock %}
 
+{% block navbar %}
+{% if session['user_id'] == thread.owner_id or is_admin %}
+<form action="{{ url_for('chat.delete_thread', thread_id=thread.id) }}" method="post">
+    <button type="submit" class="modern-button red-border">Delete Thread</button>
+</form>
+{% endif %}
+{% endblock %}
+
 {% block content %}
 <div class="chat-container">
     <section id="message-list">

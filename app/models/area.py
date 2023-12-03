@@ -48,10 +48,10 @@ class Area:
         
     @property
     def threads(self):
-        sql = text("""SELECT t.id,t.area,t.title,a.topic FROM threads t, areas a WHERE t.area = :area_id AND t.area = a.id""")
+        sql = text("""SELECT t.id,t.area,t.title,t.owner_id,a.topic FROM threads t, areas a WHERE t.area = :area_id AND t.area = a.id""")
         threads:list[Thread] = []
         for thread_result in self.db.fetch_all(sql, {"area_id" : self.id}):
-            thread = Thread(thread_result["area"], thread_result["title"], thread_result["id"], thread_result["topic"])
+            thread = Thread(thread_result["area"], thread_result["title"], thread_result["owner_id"], thread_result["id"], thread_result["topic"])
             threads.append(thread)
         return threads
     
