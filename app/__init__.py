@@ -9,7 +9,7 @@ def create_app():
     app = Flask(__name__)
     app.secret_key = getenv("SECRET_KEY")
     
-    if getenv("ENV") == "PROD":
+    if getenv("ENV", "") == "PROD":
         app.config.update(
             SESSION_COOKIE_SECURE = True,
             SESSION_COOKIE_HTTPONLY = True,

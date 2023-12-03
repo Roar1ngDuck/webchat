@@ -5,7 +5,6 @@ from ..models.thread import Thread
 from ..models.user import User
 from ..models.message import Message
 from ..utils.decorators import login_required
-from os import getenv
 
 # Blueprint setup for chat functionality, enabling modularization and URL prefixing.
 chat_blueprint = Blueprint('chat', __name__, url_prefix='/', static_folder='../static')
