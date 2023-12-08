@@ -8,9 +8,7 @@
 
 {% block navbar %}
 {% if session['user_id'] == thread.owner_id or is_admin %}
-<form action="{{ url_for('chat.delete_thread', thread_id=thread.id) }}" method="post">
-    <button type="submit" class="modern-button red-border">Delete Thread</button>
-</form>
+<button id="deleteThreadBtn" class="modern-button red-border">Delete Thread</button>
 {% endif %}
 {% endblock %}
 
@@ -25,9 +23,7 @@
             </header>
             <p>{{ message.text }}</p>
             {% if message.sender == session["user_id"] %}
-            <form action="{{ url_for('chat.delete_message', message_id=message.id, thread_id=thread.id) }}" method="post">
-                <button type="submit" class="modern-button">Delete</button>
-            </form>
+            <button type="button" class="modern-button deleteMessageBtn" data-message-id="{{ message.id }}">Delete</button>
             {% endif %}
         </article>
         {% else %}
@@ -40,10 +36,70 @@
         <button type="submit">Send</button>
     </form>
 </div>
+<div id="deleteThreadModal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" id="close-btn-delete-thread">&times;</span>
+        <h2>Delete Thread</h2>
+        <p>Are you sure you want to delete this thread?</p>
+        <form action="{{ url_for('chat.delete_thread', thread_id=thread.id) }}" method="post">
+            <button type="submit" class="modern-button red-border">Confirm Delete</button>
+            <button type="button" class="modern-button" id="cancelDeleteThread">Cancel</button>
+        </form>
+    </div>
+</div>
+<div id="deleteMessageModal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" id="close-btn-delete-message">&times;</span>
+        <h2>Delete Message</h2>
+        <p>Are you sure you want to delete this message?</p>
+        <form id="deleteMessageForm" action="" method="post">
+            <button type="submit" class="modern-button red-border">Confirm Delete</button>
+            <button type="button" class="modern-button" id="cancelDeleteMessage">Cancel</button>
+        </form>
+    </div>
+</div>
 <script>
     document.addEventListener('DOMContentLoaded', (event) => {
         var messageList = document.getElementById("message-list");
         messageList.scrollTop = messageList.scrollHeight;
     });
+</script>
+<script>
+    var deleteThreadModal = document.getElementById("deleteThreadModal");
+    var deleteThreadBtn = document.getElementById("deleteThreadBtn");
+    var spanDeleteThread = document.getElementById("close-btn-delete-thread");
+    var cancelDeleteThreadBtn = document.getElementById("cancelDeleteThread");
+
+    deleteThreadBtn.onclick = function() {
+        deleteThreadModal.style.display = "block";
+    }
+    spanDeleteThread.onclick = function() {
+        deleteThreadModal.style.display = "none";
+    }
+    cancelDeleteThreadBtn.onclick = function() {
+        deleteThreadModal.style.display = "none";
+    }
+</script>
+<script>
+    var deleteMessageModal = document.getElementById("deleteMessageModal");
+    var deleteMessageForm = document.getElementById("deleteMessageForm");
+    var deleteMessageButtons = document.querySelectorAll(".deleteMessageBtn");
+    var spanDeleteMessage = document.getElementById("close-btn-delete-message");
+    var cancelDeleteMessageBtn = document.getElementById("cancelDeleteMessage");
+
+    deleteMessageButtons.forEach(button => {
+        button.onclick = function() {
+            var messageId = this.getAttribute("data-message-id");
+            deleteMessageForm.action = "{{ url_for('chat.delete_message', message_id=0, thread_id=thread.id) }}".replace('0', messageId);
+            deleteMessageModal.style.display = "block";
+        }
+    });
+
+    spanDeleteMessage.onclick = function() {
+        deleteMessageModal.style.display = "none";
+    }
+    cancelDeleteMessageBtn.onclick = function() {
+        deleteMessageModal.style.display = "none";
+    }
 </script>
 {% endblock %}

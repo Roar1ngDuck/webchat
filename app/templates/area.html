@@ -14,10 +14,7 @@
 {% endif %}
 {% if is_admin %}
 <!-- Delete Area Button -->
-<form action="{{ url_for('chat.delete_area', area_id=area.id) }}" method="post" style="display: inline;">
-    <input type="hidden" name="area_id" value="{{ area.id }}">
-    <button type="submit" class="modern-button red-border">Delete Area</button>
-</form>
+<button id="deleteAreaBtn" class="modern-button red-border">Delete Area</button>
 {% endif %}
 {% endblock %}
 
@@ -73,7 +70,19 @@
         </form>
     </div>
 </div>
-
+<!-- Delete Area Confirmation Modal -->
+<div id="deleteAreaModal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" id="close-btn-delete-area">&times;</span>
+        <h2>Delete Area</h2>
+        <p>Are you sure you want to delete this area?</p>
+        <form action="{{ url_for('chat.delete_area', area_id=area.id) }}" method="post">
+            <input type="hidden" name="area_id" value="{{ area.id }}">
+            <button type="submit" class="modern-button red-border">Confirm Delete</button>
+            <button type="button" class="modern-button" id="cancelDelete">Cancel</button>
+        </form>
+    </div>
+</div>
 <script>
     var modal = document.getElementById("createAreaModal");
     var btn = document.getElementById("createAreaBtn");
@@ -96,6 +105,22 @@
     }
     span.onclick = function() {
         manageModal.style.display = "none";
+    }
+</script>
+<script>
+    var deleteModal = document.getElementById("deleteAreaModal");
+    var deleteBtn = document.getElementById("deleteAreaBtn");
+    var spanDelete = document.getElementById("close-btn-delete-area");
+    var cancelDeleteBtn = document.getElementById("cancelDelete");
+
+    deleteBtn.onclick = function() {
+        deleteModal.style.display = "block";
+    }
+    spanDelete.onclick = function() {
+        deleteModal.style.display = "none";
+    }
+    cancelDeleteBtn.onclick = function() {
+        deleteModal.style.display = "none";
     }
 </script>
 {% endblock %}
