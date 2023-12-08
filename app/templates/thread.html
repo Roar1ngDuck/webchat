@@ -21,6 +21,9 @@
                 <time>{{ message.sent_time_ago }}</time>
                 <strong>{{ message.sender_name }}</strong>
             </header>
+            {% if message.image_url %}
+            <img src="{{ message.image_url }}" alt="Message Image" style="max-width: 100%; height: auto;">
+            {% endif %}
             <p>{{ message.text }}</p>
             {% if message.sender == session["user_id"] %}
             <button type="button" class="modern-button deleteMessageBtn" data-message-id="{{ message.id }}">Delete</button>
@@ -30,8 +33,12 @@
         <p>No messages yet.</p>
         {% endfor %}
     </section>
-    <form action="{{ url_for('chat.view_thread', thread_id=thread.id) }}" method="post" id="message-form">
+    <form action="{{ url_for('chat.view_thread', thread_id=thread.id) }}" method="post" id="message-form" enctype="multipart/form-data">
         <textarea name="message" rows="5" required></textarea>
+        <div class="form-group">
+            <label for="image">Upload Image (optional)</label>
+            <input type="file" id="image" name="image" accept="image/*">
+        </div>
         <div class="cf-turnstile" data-sitekey="{{ turnstile_sitekey }}"></div>
         <button type="submit">Send</button>
     </form>

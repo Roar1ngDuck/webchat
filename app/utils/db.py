@@ -50,6 +50,7 @@ class Database:
             thread integer NOT NULL REFERENCES threads(id) ON DELETE CASCADE,
             sender integer NOT NULL REFERENCES users(id),
             text TEXT NOT NULL,
+            image_url TEXT,
             sent_time TIMESTAMP WITHOUT TIME ZONE DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC')
         );
         CREATE TABLE IF NOT EXISTS secret_area_privileges (

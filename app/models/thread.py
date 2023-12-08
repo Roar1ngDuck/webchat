@@ -17,7 +17,7 @@ class Thread:
     @classmethod
     def create_from_db(cls, id):
         sql = text("""
-SELECT m.id, t.title, t.owner_id, u.id as sender_id, u.username, m.text, m.sent_time, t.area, a.topic FROM messages m 
+SELECT m.id, t.title, t.owner_id, u.id as sender_id, u.username, m.text, m.image_url, m.sent_time, t.area, a.topic FROM messages m 
 JOIN users u ON m.sender = u.id 
 JOIN threads t ON m.thread = t.id 
 JOIN areas a on t.area = a.id WHERE m.thread = :thread_id ORDER BY m.sent_time""")
@@ -25,7 +25,7 @@ JOIN areas a on t.area = a.id WHERE m.thread = :thread_id ORDER BY m.sent_time""
         for row in Database().fetch_all(sql, {"thread_id" : id}):
             if not instance:
                 instance = cls(row["area"], row["title"], row["owner_id"], id, row["topic"])
-            instance.messages.append(Message(id, row["sender_id"], row["text"], row["id"], row["title"], row["username"], row["sent_time"]))
+            instance.messages.append(Message(id, row["sender_id"], row["text"], image_url=row["image_url"], message_id=row["id"], thread_title=row["title"], sender_name=row["username"], sent_time=row["sent_time"]))
         return instance
     
     @property

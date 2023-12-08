@@ -4,11 +4,12 @@ from ..utils.db import Database
 from ..utils import helpers
 
 class Message:
-    def __init__(self, thread, sender, text, message_id = None, thread_title = None, sender_name = None, sent_time = None):
+    def __init__(self, thread, sender, text, image_url = None, message_id = None, thread_title = None, sender_name = None, sent_time = None):
         self.db = Database()
         self.thread = thread
         self.sender = sender
         self.text = text
+        self.image_url = image_url
         if sent_time:
             self.sent_time = sent_time
         else:
@@ -22,6 +23,6 @@ class Message:
         return helpers.time_ago(self.sent_time)
 
     def insert(self):
-        sql = text("""INSERT INTO messages (thread, sender, text, sent_time) VALUES (:thread, :sender, :text, :sent_time) RETURNING id""")
-        self.id = self.db.execute(sql, {"thread" : self.thread, "sender" : self.sender, "text" : self.text, "sent_time" : self.sent_time})["id"]
+        sql = text("""INSERT INTO messages (thread, sender, text, image_url, sent_time) VALUES (:thread, :sender, :text, :image_url, :sent_time) RETURNING id""")
+        self.id = self.db.execute(sql, {"thread": self.thread, "sender": self.sender, "text": self.text, "image_url": self.image_url, "sent_time": self.sent_time})["id"]
         return self

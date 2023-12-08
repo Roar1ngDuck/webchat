@@ -5,6 +5,8 @@ from ..models.thread import Thread
 from ..models.user import User
 from ..models.message import Message
 from ..utils.decorators import login_required
+from pathlib import Path
+import uuid
 
 # Blueprint setup for chat functionality, enabling modularization and URL prefixing.
 chat_blueprint = Blueprint('chat', __name__, url_prefix='/', static_folder='../static')
@@ -92,8 +94,17 @@ def view_thread(thread_id):
         if not helpers.is_valid_message(request.form["message"]):
             return render_template("thread.html", thread=Thread.create_from_db(thread_id), turnstile_sitekey = helpers.get_turnstile_sitekey(), error=True)
         
+        filename = None
+        if "image" in request.files:
+            Path("./app/static/uploads").mkdir(parents=True, exist_ok=True)
+            image = request.files["image"]
+            rand = str(uuid.uuid4())
+            filename = "./app/static/uploads/" + rand + ".jpg"
+            image.save(filename)
+            filename = "/static/uploads/" + rand + ".jpg"
+
          # Create and insert the new message into the thread.
-        new_message = Message(thread_id, session["user_id"], request.form["message"])
+        new_message = Message(thread_id, session["user_id"], request.form["message"], image_url=filename)
         new_message.insert()
 
         # Redirect back to the thread page after adding a new message.
