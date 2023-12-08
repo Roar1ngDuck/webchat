@@ -35,23 +35,14 @@
             </div>
             <script>
                 var search_modal = document.getElementById("searchModal");
-            
                 var btn = document.getElementById("openSearchModalBtn");
-            
-                var span = document.getElementById("closeSearchModalBtn")[0];
+                var span = document.getElementById("closeSearchModalBtn");
             
                 btn.onclick = function() {
                     search_modal.style.display = "block";
                 }
-            
                 span.onclick = function() {
                     search_modal.style.display = "none";
-                }
-            
-                window.onclick = function(event) {
-                    if (event.target == modal) {
-                        search_modal.style.display = "none";
-                    }
                 }
             </script>
             {% block navbar %}{% endblock %}
