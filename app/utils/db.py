@@ -41,7 +41,7 @@ class Database:
         );
         CREATE TABLE IF NOT EXISTS threads (
             id SERIAL PRIMARY KEY,
-            area integer NOT NULL REFERENCES areas(id),
+            area integer NOT NULL REFERENCES areas(id) ON DELETE CASCADE,
             title TEXT NOT NULL,
             owner_id integer NOT NULL REFERENCES users(id)
         );
