@@ -221,5 +221,13 @@ def delete_thread(thread_id):
     sql = text("""DELETE FROM threads WHERE id = :thread_id""")
     Database().execute(sql, {"thread_id": thread_id}, False)
 
+def delete_area(area_id):
+    """
+    Deletes an area from the database.
+    """
+
+    sql = text("""DELETE FROM areas WHERE id = :area_id""")
+    Database().execute(sql, {"area_id": area_id}, False)
+
 def get_turnstile_sitekey():
     return getenv("TURNSTILE_SITEKEY", "")

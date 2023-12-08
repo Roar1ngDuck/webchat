@@ -12,6 +12,13 @@
 <!-- Manage Area Access Button -->
 <button id="manageAreaAccessBtn" class="modern-button green-border">Manage Area Access</button>
 {% endif %}
+{% if is_admin %}
+<!-- Delete Area Button -->
+<form action="{{ url_for('chat.delete_area', area_id=area.id) }}" method="post" style="display: inline;">
+    <input type="hidden" name="area_id" value="{{ area.id }}">
+    <button type="submit" class="modern-button red-border">Delete Area</button>
+</form>
+{% endif %}
 {% endblock %}
 
 {% block content %}

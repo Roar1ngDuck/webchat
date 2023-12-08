@@ -148,6 +148,16 @@ def delete_message(message_id, thread_id):
     # Redirect back to the thread view.
     return redirect(url_for("chat.view_thread", thread_id=thread_id))
 
+@chat_blueprint.route("/delete_area/<int:area_id>", methods=['POST'])
+@login_required
+def delete_area(area_id):
+    if session["is_admin"] != "True":
+        return redirect(url_for("chat.index"))
+
+    helpers.delete_area(area_id)
+
+    return redirect(url_for("chat.index"))
+
 @chat_blueprint.route("/login", methods=['GET', 'POST'])
 def login():
     # Display login form on GET request.
