@@ -170,6 +170,9 @@ def login():
         if not helpers.verify_turnstile(request):
             return render_template("login.html", turnstile_sitekey = helpers.get_turnstile_sitekey(), turnstile_error=True)
         
+        if not helpers.username_exists(request.form["username"]):
+            return render_template("login.html", turnstile_sitekey = helpers.get_turnstile_sitekey(), error=True)
+
         # Verify user credentials. If valid, retrieve user_id and admin status.
         user_id, is_admin = helpers.verify_login(request)
 
