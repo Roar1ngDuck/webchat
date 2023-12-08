@@ -445,3 +445,30 @@ main {
     width: 300px;
     height: 75px;
 }
+
+/* Search Results Styles */
+.search-results {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: left;
+}
+
+.result-box {
+    border: 1px solid rgb(114, 177, 228);
+    padding: 1rem;
+    width: calc(33% - 1rem);
+    text-decoration: none;
+    color: inherit;
+    background-color: #2c3133;
+}
+
+.result-box:hover {
+    background-color: rgb(52, 86, 114);
+}
+
+@media (max-width: 767px) {
+    .result-box {
+        width: 100%; /* Full width on mobile devices */
+    }
+}

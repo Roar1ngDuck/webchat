@@ -23,7 +23,7 @@
 </section>
 <div id="createAreaModal" class="modal">
     <div class="modal-content">
-        <span class="close-btn">&times;</span>
+        <span class="close-btn" id="close-btn-create-area">&times;</span>
         <form action="{{ url_for('chat.index') }}" method="post" id="createAreaForm">
             <h2>Create New Area</h2>
             <div class="form-group">
@@ -51,7 +51,7 @@
     var btn = document.getElementById("createAreaBtn");
 
     // Get the <span> element that closes the modal
-    var span = document.getElementsByClassName("close-btn")[0];
+    var span = document.getElementById("close-btn-create-area");
 
     // When the user clicks the button, open the modal 
     btn.onclick = function() {

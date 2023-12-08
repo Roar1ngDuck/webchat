@@ -231,3 +231,26 @@ def delete_area(area_id):
 
 def get_turnstile_sitekey():
     return getenv("TURNSTILE_SITEKEY", "")
+
+def full_search(query):
+    # SQL queries to search areas, threads, and messages
+    area_sql = text("SELECT * FROM areas WHERE topic ILIKE :query")
+    thread_sql = text("""
+        SELECT t.*, a.topic as area_topic 
+        FROM threads t 
+        JOIN areas a ON t.area = a.id 
+        WHERE t.title ILIKE :query
+    """)
+    message_sql = text("""
+        SELECT m.*, t.title as thread_title, a.topic as area_topic 
+        FROM messages m 
+        JOIN threads t ON m.thread = t.id 
+        JOIN areas a ON t.area = a.id 
+        WHERE m.text ILIKE :query
+    """)
+
+    areas = Database().fetch_all(area_sql, {"query": f"%{query}%"})
+    threads = Database().fetch_all(thread_sql, {"query": f"%{query}%"})
+    messages = Database().fetch_all(message_sql, {"query": f"%{query}%"})
+
+    return areas, threads, messages

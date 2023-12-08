@@ -158,6 +158,15 @@ def delete_area(area_id):
 
     return redirect(url_for("chat.index"))
 
+@chat_blueprint.route("/search", methods=['GET'])
+@login_required
+def search():
+    query = request.args.get('query', '')
+    
+    areas, threads, messages = helpers.full_search(query)
+
+    return render_template("search_results.html", areas=areas, threads=threads, messages=messages)
+
 @chat_blueprint.route("/login", methods=['GET', 'POST'])
 def login():
     # Display login form on GET request.

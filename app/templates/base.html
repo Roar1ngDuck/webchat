@@ -17,6 +17,43 @@
             {% if "user_id" in session %}
             <span  class="username-display">Logged in as {% if session["is_admin"] == "True" %}administrator {% endif %}<span class="username-highlight">{{ session["username"] }}</span></span>
             <a href="{{ url_for('chat.logout') }}" class="logout-button">Logout</a>
+            <!-- Search Button -->
+            <button id="openSearchModalBtn" class="modern-button">Search</button>
+            <!-- Search Modal -->
+            <div id="searchModal" class="modal">
+                <div class="modal-content">
+                    <span class="close-btn" id="closeSearchModalBtn">&times;</span>
+                    <form action="{{ url_for('chat.search') }}" method="get" id="searchForm">
+                        <h2>Search</h2>
+                        <div class="form-group">
+                            <label for="searchQuery">Search:</label>
+                            <input type="text" id="searchQuery" name="query" required>
+                        </div>
+                        <button type="submit" class="modern-button">Search</button>
+                    </form>
+                </div>
+            </div>
+            <script>
+                var search_modal = document.getElementById("searchModal");
+            
+                var btn = document.getElementById("openSearchModalBtn");
+            
+                var span = document.getElementById("closeSearchModalBtn")[0];
+            
+                btn.onclick = function() {
+                    search_modal.style.display = "block";
+                }
+            
+                span.onclick = function() {
+                    search_modal.style.display = "none";
+                }
+            
+                window.onclick = function(event) {
+                    if (event.target == modal) {
+                        search_modal.style.display = "none";
+                    }
+                }
+            </script>
             {% block navbar %}{% endblock %}
             {% endif %}
         </div>
