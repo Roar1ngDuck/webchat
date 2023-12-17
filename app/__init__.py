@@ -9,7 +9,8 @@ def create_app():
 
     app = Flask(__name__)
     app.secret_key = getenv("SECRET_KEY")
-    csrf = CSRFProtect(app)
+    if getenv("ENV", "") == "PROD":
+        CSRFProtect(app)
     
     if getenv("ENV", "") == "PROD":
         app.config.update(
