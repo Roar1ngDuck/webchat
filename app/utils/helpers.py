@@ -323,7 +323,7 @@ def delete_thread(thread_id):
     sql = text("""SELECT image_url FROM messages WHERE thread = :thread_id""")
     image_urls = Database().fetch_all(sql, {"thread_id": thread_id})
     for image_url in image_urls:
-        if not image_url["image_url"]:
+        if image_url["image_url"]:
             os.remove("./app" + image_url["image_url"])
 
     sql = text("""DELETE FROM threads WHERE id = :thread_id""")
