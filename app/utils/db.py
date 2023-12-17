@@ -73,6 +73,20 @@ class Database:
             area_id integer NOT NULL REFERENCES areas(id) ON DELETE CASCADE,
             user_id integer NOT NULL REFERENCES users(id)
         );
+        CREATE TABLE IF NOT EXISTS thread_subscriptions (
+            id SERIAL PRIMARY KEY,
+            thread_id integer NOT NULL REFERENCES threads(id) ON DELETE CASCADE,
+            user_id integer NOT NULL REFERENCES users(id),
+            UNIQUE (thread_id, user_id)
+        );
+        CREATE TABLE IF NOT EXISTS notifications (
+            id SERIAL PRIMARY KEY,
+            user_id integer NOT NULL REFERENCES users(id),
+            thread_id integer NOT NULL REFERENCES threads(id),
+            sender_id integer NOT NULL REFERENCES users(id),
+            message TEXT NOT NULL,
+            sent_time TIMESTAMP WITHOUT TIME ZONE DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC')
+        );
         """
         with self._engine.connect() as connection:
             with connection.begin():
@@ -110,7 +124,10 @@ class Database:
             dict: A dictionary containing the first row of the query results.
         """
         with self._engine.connect() as connection:
-            return next(connection.execute(sql, params).mappings())
+            try:
+                return next(connection.execute(sql, params).mappings())
+            except Exception:
+                return None
 
     def execute(self, sql, params=None, return_result=True):
         """
@@ -126,6 +143,9 @@ class Database:
         """
         with self._engine.connect() as connection:
             with connection.begin():
-                result = connection.execute(sql, params)
-                if return_result:
-                    return next(result.mappings())
+                try:
+                    result = connection.execute(sql, params)
+                    if return_result:
+                        return next(result.mappings())
+                except Exception:
+                    return None

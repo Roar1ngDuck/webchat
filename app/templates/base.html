@@ -71,7 +71,26 @@
         {% endif %}
     {% endwith %}
     <main>
-        {% block content %}{% endblock %}
+        <div class="content-container">
+            {% block content %}{% endblock %}
+        </div>
+        {% if "user_id" in session %}
+        <aside class="notifications-container">
+            <h3>Notifications</h3>
+            <ul>
+                {% for notification in notifications %}
+                    <li>
+                        <span>{{ notification.sent_time_ago }}</span>
+                        <a href="{{ url_for('chat.view_thread', thread_id=notification.thread_id) }}">
+                            {{ notification.area_topic }} / {{ notification.thread_title }} 
+                            <br>
+                            {{ notification.sender_name }}: {{ notification.message }}
+                        </a>
+                    </li>
+                {% endfor %}
+            </ul>
+        </aside>
+        {% endif %}
     </main>
 </body>
 </html>

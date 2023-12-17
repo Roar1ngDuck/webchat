@@ -411,3 +411,37 @@ def is_admin():
     """
 
     return session["user"] == "admin"
+
+
+def get_notifications(user_id):
+    """
+    Retrieves notifications for a given user.
+
+    Args:
+        user_id (int): The ID of the user to retrieve notifications for.
+
+    Returns:
+        list: A list of notifications for the user.
+    """
+
+    sql = text("""
+        SELECT n.id, n.thread_id, n.message, n.sent_time, n.sender_id,
+               t.area, t.title as thread_title,
+               a.topic as area_topic,
+               u.username as sender_name
+        FROM notifications n
+        JOIN threads t ON n.thread_id = t.id
+        JOIN areas a ON t.area = a.id
+        JOIN users u ON n.sender_id = u.id
+        WHERE n.user_id = :user_id
+        ORDER BY n.sent_time DESC
+    """)
+    raw_notifications = Database().fetch_all(sql, {"user_id": user_id})
+
+    notifications = []
+    for raw_notification in raw_notifications:
+        notification = dict(raw_notification)
+        notification['sent_time_ago'] = time_ago(notification['sent_time'])
+        notifications.append(notification)
+
+    return notifications

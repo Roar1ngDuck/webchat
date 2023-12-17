@@ -10,6 +10,16 @@
 {% if session['user_id'] == thread.owner_id or is_admin %}
 <button id="deleteThreadBtn" class="modern-button red-border">Delete Thread</button>
 {% endif %}
+<form id="subscriptionForm" action="{{ url_for('chat.toggle_subscription', thread_id=thread.id) }}" method="post" style="display: none;">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}"/>
+</form>
+<button id="subscriptionButton" class="modern-button">
+    {% if is_subscribed %}
+        Unsubscribe
+    {% else %}
+        Subscribe
+    {% endif %}
+</button>
 {% endblock %}
 
 {% block content %}
@@ -152,5 +162,13 @@
     cancelEditMessageBtn.onclick = function() {
         editMessageModal.style.display = "none";
     }
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const subscriptionButton = document.getElementById('subscriptionButton');
+        subscriptionButton.addEventListener('click', function() {
+            document.getElementById('subscriptionForm').submit();
+        });
+    });
 </script>
 {% endblock %}

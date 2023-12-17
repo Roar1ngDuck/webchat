@@ -9,6 +9,8 @@ from ..models.thread import Thread
 from ..models.user import User
 from ..models.message import Message
 from ..utils.decorators import login_required, captcha_required
+from ..utils.db import Database
+from sqlalchemy import text
 
 
 # Blueprint setup for chat functionality, enabling modularization and URL prefixing.
@@ -19,7 +21,7 @@ chat_blueprint = Blueprint('chat', __name__, url_prefix='/', static_folder='../s
 @login_required
 def index():
     user_id = session["user_id"]
-    return render_template("index.html", areas=helpers.get_areas(user_id), is_admin=helpers.is_admin(), turnstile_sitekey=helpers.get_turnstile_sitekey(), csrf_token=generate_csrf())
+    return render_template("index.html", areas=helpers.get_areas(user_id), is_admin=helpers.is_admin(), turnstile_sitekey=helpers.get_turnstile_sitekey(), csrf_token=generate_csrf(), notifications=helpers.get_notifications(user_id))
 
 
 @chat_blueprint.route("/create_area", methods=['POST'])
@@ -30,7 +32,7 @@ def create_area():
     if not helpers.is_valid_area_topic(request.form["topic"]):
         user_id = session["user_id"]
         flash("Invalid area topic", "error")
-        return render_template("index.html", areas=helpers.get_areas(user_id), turnstile_sitekey=helpers.get_turnstile_sitekey(), csrf_token=generate_csrf())
+        return render_template("index.html", areas=helpers.get_areas(user_id), turnstile_sitekey=helpers.get_turnstile_sitekey(), csrf_token=generate_csrf(), notifications=helpers.get_notifications(user_id))
 
     is_secret = helpers.is_admin() and request.form.get("is_secret", "") == "on"
 
@@ -58,7 +60,7 @@ def view_area(area_id):
     access_list = helpers.get_access_list(area.id) if area.is_secret and helpers.is_admin() else []
 
     # Render the area page with appropriate data and access controls.
-    return render_template("area.html", area=area, is_admin=helpers.is_admin(), access_list=access_list, turnstile_sitekey=helpers.get_turnstile_sitekey(), csrf_token=generate_csrf())
+    return render_template("area.html", area=area, is_admin=helpers.is_admin(), access_list=access_list, turnstile_sitekey=helpers.get_turnstile_sitekey(), csrf_token=generate_csrf(), notifications=helpers.get_notifications(user_id))
 
 
 @chat_blueprint.route("/area/<int:area_id>/create_thread", methods=['POST'])
@@ -67,7 +69,7 @@ def create_thread(area_id):
     if not helpers.is_valid_thread_title(request.form["title"]):
         user_id = session["user_id"]
         flash("Invalid thread title", "error")
-        return render_template("area.html", area=Area.create_from_db(area_id, user_id), turnstile_sitekey=helpers.get_turnstile_sitekey(), csrf_token=generate_csrf())
+        return render_template("area.html", area=Area.create_from_db(area_id, user_id), turnstile_sitekey=helpers.get_turnstile_sitekey(), csrf_token=generate_csrf(), notifications=helpers.get_notifications(user_id))
 
     # Create a new thread and its first message in the database.
     new_thread = Thread(area_id, request.form["title"], session["user_id"])
@@ -83,12 +85,21 @@ def create_thread(area_id):
 @chat_blueprint.route("/thread/<int:thread_id>", methods=['GET'])
 @login_required
 def view_thread(thread_id):
-    # Render the thread page, including all its messages. If thread doesn't exist, redirect back to home page.
+    db = Database()
+    user_id = session['user_id']
+
     thread = Thread.create_from_db(thread_id)
     if not thread:
         flash("Thread does not exist", "error")
         return redirect(url_for("chat.index"))
-    return render_template("thread.html", thread=thread, turnstile_sitekey=helpers.get_turnstile_sitekey(), is_admin=helpers.is_admin(), csrf_token=generate_csrf())
+
+    subscription_check_sql = text("""
+        SELECT 1 FROM thread_subscriptions
+        WHERE thread_id = :thread_id AND user_id = :user_id
+    """)
+    is_subscribed = db.fetch_one(subscription_check_sql, {"thread_id": thread_id, "user_id": user_id}) is not None
+
+    return render_template("thread.html", thread=thread, turnstile_sitekey=helpers.get_turnstile_sitekey(), is_admin=helpers.is_admin(), csrf_token=generate_csrf(), is_subscribed=is_subscribed, notifications=helpers.get_notifications(user_id))
 
 
 @chat_blueprint.route("/thread/<int:thread_id>/send_message", methods=['POST'])
@@ -98,7 +109,8 @@ def send_message(thread_id):
     # Validate message
     if not helpers.is_valid_message(request.form["message"]):
         flash("Invalid message", "error")
-        return render_template("thread.html", thread=Thread.create_from_db(thread_id), turnstile_sitekey=helpers.get_turnstile_sitekey(), csrf_token=generate_csrf())
+        user_id = session["user_id"]
+        return render_template("thread.html", thread=Thread.create_from_db(thread_id), turnstile_sitekey=helpers.get_turnstile_sitekey(), csrf_token=generate_csrf(), notifications=helpers.get_notifications(user_id))
 
     filename = None
     if "image" in request.files and request.files["image"].filename != "":
@@ -109,9 +121,33 @@ def send_message(thread_id):
         image.save(filename)
         filename = "/static/uploads/" + rand + ".jpg"
 
-        # Create and insert the new message into the thread.
+    # Create and insert the new message into the thread.
     new_message = Message(thread_id, session["user_id"], request.form["message"], image_url=filename)
-    new_message.insert()
+    new_message = new_message.insert()
+
+    # Create notifications for subscribed users
+    db = Database()
+    subscribers_sql = text("""
+        SELECT user_id FROM thread_subscriptions
+        WHERE thread_id = :thread_id AND user_id != :sender_id
+    """)
+    subscribers_sql = text("""
+        SELECT user_id FROM thread_subscriptions
+        WHERE thread_id = :thread_id
+    """)
+    subscribers = db.fetch_all(subscribers_sql, {"thread_id": thread_id, "sender_id": session["user_id"]})
+
+    for subscriber in subscribers:
+        notification_sql = text("""
+            INSERT INTO notifications (user_id, thread_id, sender_id, message, sent_time)
+            VALUES (:user_id, :thread_id, :sender_id, :message, CURRENT_TIMESTAMP)
+        """)
+        db.execute(notification_sql, {
+            "user_id": subscriber["user_id"],
+            "thread_id": thread_id,
+            "sender_id": session["user_id"],
+            "message": new_message.text[:100]  # Optional: limit message length in notification
+        }, return_result=False)
 
     # Redirect back to the thread page after adding a new message.
     return redirect(url_for("chat.view_thread", thread_id=thread_id))
@@ -136,6 +172,45 @@ def edit_message(thread_id, message_id):
     message.update(new_text)
 
     return redirect(url_for("chat.view_thread", thread_id=thread_id))
+
+
+@chat_blueprint.route('/toggle_subscription/<int:thread_id>', methods=['POST'])
+@login_required
+def toggle_subscription(thread_id):
+    db = Database()
+    user_id = session['user_id']
+
+    # Check if the thread exists
+    thread_check_sql = text("SELECT id FROM threads WHERE id = :thread_id")
+    if not db.fetch_one(thread_check_sql, {"thread_id": thread_id}):
+        flash('Thread not found.', 'error')
+        return redirect(url_for('chat.index'))
+
+    # Check current subscription status
+    subscription_check_sql = text("""
+        SELECT id FROM thread_subscriptions
+        WHERE thread_id = :thread_id AND user_id = :user_id
+    """)
+    subscription = db.fetch_one(subscription_check_sql, {"thread_id": thread_id, "user_id": user_id})
+
+    if subscription:
+        # Unsubscribe the user
+        unsubscribe_sql = text("""
+            DELETE FROM thread_subscriptions
+            WHERE id = :subscription_id
+        """)
+        db.execute(unsubscribe_sql, {"subscription_id": subscription['id']}, False)
+        flash('Unsubscribed from the thread.', 'info')
+    else:
+        # Subscribe the user
+        subscribe_sql = text("""
+            INSERT INTO thread_subscriptions (thread_id, user_id)
+            VALUES (:thread_id, :user_id)
+        """)
+        db.execute(subscribe_sql, {"thread_id": thread_id, "user_id": user_id}, False)
+        flash('Subscribed to the thread.', 'success')
+
+    return redirect(url_for('chat.view_thread', thread_id=thread_id))
 
 
 @chat_blueprint.route("/manage_area_access", methods=['POST'])
@@ -209,7 +284,9 @@ def search():
 
     areas, threads, messages = helpers.full_search(query)
 
-    return render_template("search_results.html", areas=areas, threads=threads, messages=messages, csrf_token=generate_csrf())
+    user_id = session["user_id"]
+
+    return render_template("search_results.html", areas=areas, threads=threads, messages=messages, csrf_token=generate_csrf(), notifications=helpers.get_notifications(user_id))
 
 
 @chat_blueprint.route("/login", methods=['GET', 'POST'])

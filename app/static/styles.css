@@ -514,3 +514,50 @@ main {
     position: absolute;
     z-index: -1;
 }
+
+main {
+    display: flex;
+    justify-content: space-between;
+}
+
+.content-container {
+    width: 85%;
+    padding: 10px;
+}
+
+.notifications-container {
+    width: 25%;
+    padding: 10px;
+    box-sizing: border-box;
+    height: 100vh;
+    overflow-y: auto;
+}
+
+.notifications-container h3 {
+    margin-top: 0;
+}
+
+.notifications-container ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+.notifications-container li {
+    margin-bottom: 10px;
+}
+
+.notifications-container li span {
+    display: block;
+    font-size: 0.9em;
+    color: #666;
+}
+
+.notifications-container a {
+    text-decoration: none;
+    color: #e8e6e3;
+}
+
+.notifications-container a:hover {
+    color: #777776;
+}
