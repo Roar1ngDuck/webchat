@@ -7,7 +7,7 @@ from zxcvbn import zxcvbn
 import requests
 from flask import session
 from ..utils.db import Database
-from ..models.area import Area
+from ..models.area import Area, Thread
 
 
 def get_areas(user_id):
@@ -445,3 +445,99 @@ def get_notifications(user_id):
         notifications.append(notification)
 
     return notifications
+
+
+def create_notification(thread_id, message_text):
+    """
+    Creates a new notification in the database.
+
+    Args:
+        thread_id (int): The ID of the thread associated with the notification.
+        message_text (str): The message associated with the notification.
+    """
+
+    db = Database()
+    subscribers_sql = text("""
+        SELECT user_id FROM thread_subscriptions
+        WHERE thread_id = :thread_id AND user_id != :sender_id
+    """)
+    subscribers_sql = text("""
+        SELECT user_id FROM thread_subscriptions
+        WHERE thread_id = :thread_id AND user_id != :sender_id
+    """)
+    subscribers = db.fetch_all(subscribers_sql, {"thread_id": thread_id, "sender_id": session["user_id"]})
+
+    for subscriber in subscribers:
+        notification_sql = text("""
+            INSERT INTO notifications (user_id, thread_id, sender_id, message, sent_time)
+            VALUES (:user_id, :thread_id, :sender_id, :message, :time)
+        """)
+        db.execute(notification_sql, {
+            "user_id": subscriber["user_id"],
+            "thread_id": thread_id,
+            "sender_id": session["user_id"],
+            "message": message_text[:100],
+            "time": datetime.now()
+        }, return_result=False)
+
+
+def toggle_subscription(thread_id, user_id):
+    """
+    Toggles the subscription status of a user for a thread.
+
+    Args:
+        thread_id (int): The ID of the thread to toggle the subscription status for.
+        user_id (int): The ID of the user to toggle the subscription status for.
+    """
+
+    # Check if the thread exists
+    thread_check_sql = text("SELECT id FROM threads WHERE id = :thread_id")
+    if not Database().fetch_one(thread_check_sql, {"thread_id": thread_id}):
+        return ("Thread not found", "Error")
+
+    # Check current subscription status
+    subscription_check_sql = text("""
+        SELECT id FROM thread_subscriptions
+        WHERE thread_id = :thread_id AND user_id = :user_id
+    """)
+    subscription = Database().fetch_one(subscription_check_sql, {"thread_id": thread_id, "user_id": user_id})
+
+    if subscription:
+        # Unsubscribe the user
+        unsubscribe_sql = text("""
+            DELETE FROM thread_subscriptions
+            WHERE id = :subscription_id
+        """)
+        Database().execute(unsubscribe_sql, {"subscription_id": subscription['id']}, False)
+        return ("Unsubscribed from the thread", "Success")
+    else:
+        # Subscribe the user
+        subscribe_sql = text("""
+            INSERT INTO thread_subscriptions (thread_id, user_id)
+            VALUES (:thread_id, :user_id)
+        """)
+        Database().execute(subscribe_sql, {"thread_id": thread_id, "user_id": user_id}, False)
+        return ("Subscribed to the thread", "Success")
+
+
+def is_subscribed(thread_id, user_id):
+    """
+    Checks if a user is subscribed to a thread.
+
+    Args:
+        thread_id (int): The ID of the thread to check.
+        user_id (int): The ID of the user to check.
+
+    Returns:
+        bool: True if the user is subscribed to the thread, False otherwise.
+    """
+
+    thread = Thread.create_from_db(thread_id)
+    if not thread:
+        return False
+
+    subscription_check_sql = text("""
+        SELECT 1 FROM thread_subscriptions
+        WHERE thread_id = :thread_id AND user_id = :user_id
+    """)
+    return Database().fetch_one(subscription_check_sql, {"thread_id": thread_id, "user_id": user_id}) is not None
