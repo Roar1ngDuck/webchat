@@ -117,6 +117,27 @@ def send_message(thread_id):
     return redirect(url_for("chat.view_thread", thread_id=thread_id))
 
 
+@chat_blueprint.route("/thread/<int:thread_id>/edit_message/<int:message_id>", methods=['POST'])
+@login_required
+def edit_message(thread_id, message_id):
+    message = Message.create_from_db(message_id)
+
+    if not message or message.sender != session["user_id"]:
+        flash("You are not authorized to edit this message.", "error")
+        return redirect(url_for('chat.view_thread', thread_id=thread_id))
+
+    new_text = request.form.get("edited_message")
+
+    if not helpers.is_valid_message(new_text):
+        flash("Invalid message", "error")
+        return redirect(url_for('chat.view_thread', thread_id=thread_id))
+
+    message.text = new_text
+    message.update(new_text)
+
+    return redirect(url_for("chat.view_thread", thread_id=thread_id))
+
+
 @chat_blueprint.route("/manage_area_access", methods=['POST'])
 @login_required
 def manage_area_access():

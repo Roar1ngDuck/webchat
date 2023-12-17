@@ -50,6 +50,43 @@ class Message:
         self.thread_title = thread_title
         self.sender_name = sender_name
 
+    @classmethod
+    def create_from_db(cls, message_id):
+        """
+        Retrieves a message from the database based on the message ID.
+
+        Args:
+            message_id (int): The ID of the message to be fetched.
+
+        Returns:
+            Message or None: An instance of Message if found, otherwise None.
+        """
+        sql = text("""
+        SELECT m.id, m.thread, m.sender, m.text, m.image_url, m.sent_time, 
+            t.title as thread_title, u.username as sender_name
+        FROM messages m
+        JOIN threads t ON m.thread = t.id
+        JOIN users u ON m.sender = u.id
+        WHERE m.id = :message_id
+        """)
+
+        try:
+            result = Database().fetch_one(sql, {"message_id": message_id})
+            if result:
+                return cls(
+                    thread=result["thread"],
+                    sender=result["sender"],
+                    text=result["text"],
+                    image_url=result["image_url"],
+                    message_id=result["id"],
+                    thread_title=result["thread_title"],
+                    sender_name=result["sender_name"],
+                    sent_time=result["sent_time"]
+                )
+            return None
+        except Exception:
+            return None
+
     @property
     def sent_time_ago(self):
         """
@@ -72,3 +109,16 @@ class Message:
         sql = text("""INSERT INTO messages (thread, sender, text, image_url, sent_time) VALUES (:thread, :sender, :text, :image_url, :sent_time) RETURNING id""")
         self.id = self.db.execute(sql, {"thread": self.thread, "sender": self.sender, "text": self.text, "image_url": self.image_url, "sent_time": self.sent_time})["id"]
         return self
+
+    def update(self, new_text, new_image_url=None):
+        """
+        Updates the text and optionally the image URL of the message in the database.
+
+        Args:
+            new_text (str): The new text content of the message.
+            new_image_url (str, optional): The new URL of the image attached to the message, if any. Defaults to None.
+        """
+        sql = text("""UPDATE messages SET text = :new_text, image_url = :new_image_url WHERE id = :message_id""")
+        self.db.execute(sql, {"new_text": new_text, "new_image_url": new_image_url, "message_id": self.id}, False)
+        self.text = new_text
+        self.image_url = new_image_url

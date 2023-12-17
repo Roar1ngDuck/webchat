@@ -26,6 +26,7 @@
             {% endif %}
             <p>{{ message.text }}</p>
             {% if message.sender == session["user_id"] %}
+            <button type="button" class="modern-button editMessageBtn" data-message-id="{{ message.id }}">Edit</button>
             <button type="button" class="modern-button deleteMessageBtn" data-message-id="{{ message.id }}">Delete</button>
             {% endif %}
         </article>
@@ -71,6 +72,18 @@
         </form>
     </div>
 </div>
+<div id="editMessageModal" class="modal">
+    <div class="modal-content">
+        <span class="close-btn" id="close-btn-edit-message">&times;</span>
+        <h2>Edit Message</h2>
+        <form id="editMessageForm" action="{{ url_for('chat.edit_message', message_id=0, thread_id=thread.id) }}" method="post">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token }}"/>
+            <textarea id="editMessageText" name="edited_message" rows="5" required></textarea>
+            <button type="submit" class="modern-button">Confirm Edit</button>
+            <button type="button" class="modern-button" id="cancelEditMessage">Cancel</button>
+        </form>
+    </div>
+</div>
 <script>
     document.addEventListener('DOMContentLoaded', (event) => {
         var messageList = document.getElementById("message-list");
@@ -113,6 +126,31 @@
     }
     cancelDeleteMessageBtn.onclick = function() {
         deleteMessageModal.style.display = "none";
+    }
+</script>
+<script>
+    var editMessageModal = document.getElementById("editMessageModal");
+    var editMessageText = document.getElementById("editMessageText");
+    var editMessageForm = document.getElementById("editMessageForm");
+    var editMessageButtons = document.querySelectorAll(".editMessageBtn");
+    var spanEditMessage = document.getElementById("close-btn-edit-message");
+    var cancelEditMessageBtn = document.getElementById("cancelEditMessage");
+
+    editMessageButtons.forEach(button => {
+        button.onclick = function() {
+            var messageId = this.getAttribute("data-message-id");
+            var messageText = this.closest('.message').querySelector('p').textContent;
+            editMessageText.value = messageText;
+            editMessageForm.action = "{{ url_for('chat.edit_message', message_id=0, thread_id=thread.id) }}".replace('0', messageId);
+            editMessageModal.style.display = "block";
+        }
+    });
+
+    spanEditMessage.onclick = function() {
+        editMessageModal.style.display = "none";
+    }
+    cancelEditMessageBtn.onclick = function() {
+        editMessageModal.style.display = "none";
     }
 </script>
 {% endblock %}
