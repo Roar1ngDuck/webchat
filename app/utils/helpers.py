@@ -357,18 +357,19 @@ def full_search(query):
                where each list contains dictionaries of the respective query results.
     """
 
-    area_sql = text("SELECT * FROM areas WHERE topic ILIKE :query")
+    area_sql = text("SELECT id, topic FROM areas WHERE topic ILIKE :query")
     thread_sql = text("""
-        SELECT t.*, a.topic as area_topic 
+        SELECT t.title, t.id, a.topic as area_topic 
         FROM threads t 
         JOIN areas a ON t.area = a.id 
         WHERE t.title ILIKE :query
     """)
     message_sql = text("""
-        SELECT m.*, t.title as thread_title, a.topic as area_topic 
-        FROM messages m 
-        JOIN threads t ON m.thread = t.id 
-        JOIN areas a ON t.area = a.id 
+        SELECT m.text, m.thread, t.title as thread_title, a.topic as area_topic, u.username as sender_name
+        FROM messages m
+        JOIN threads t ON m.thread = t.id
+        JOIN areas a ON t.area = a.id
+        JOIN users u ON m.sender = u.id
         WHERE m.text ILIKE :query
     """)
 

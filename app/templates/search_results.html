@@ -17,7 +17,7 @@
     <div class="search-results">
         {% for thread in threads %}
         <a href="{{ url_for('chat.view_thread', thread_id=thread.id) }}" class="result-box">
-            <h4>{{ thread.area_topic }}: {{ thread.title }}</h4>
+            <h4>{{ thread.area_topic }} / {{ thread.title }}</h4>
         </a>
         {% endfor %}
     </div>
@@ -26,7 +26,8 @@
     <div class="search-results">
         {% for message in messages %}
         <a href="{{ url_for('chat.view_thread', thread_id=message.thread) }}" class="result-box">
-            <h4>{{ message.area_topic }}: {{ message.thread_title }} - {{ message.text }}</h4>
+            <h4>{{ message.area_topic }} / {{ message.thread_title }}</h4>
+            <h4>{{ message.sender_name }}: {{ message.text }}</h4>
         </a>
         {% endfor %}
     </div>
