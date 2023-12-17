@@ -94,7 +94,7 @@ class Area:
 
         sql = text("""SELECT MAX(m.sent_time) FROM messages m WHERE m.thread in (SELECT t.id FROM threads t WHERE t.area = :area_id)""")
         last_message_time = self.db.fetch_one(sql, {"area_id" : self.id})["max"]
-        if not last_message_time:
+        if last_message_time:
             return helpers.time_ago(last_message_time)
         return None
 
