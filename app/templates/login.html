@@ -2,9 +2,6 @@
 
 {% block content %}
 <div class="login-container">
-    {% if error %}
-        <p class="generic-error">Incorrect username or password.</p>
-    {% endif %}
     <form action="{{ url_for('chat.login') }}" method="post">
         <div class="form-group">
             <label for="username">Username</label>

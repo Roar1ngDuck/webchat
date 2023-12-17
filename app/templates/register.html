@@ -2,9 +2,6 @@
 
 {% block content %}
 <div class="register-container">
-    {% if error %}
-        <p class="generic-error">{{ error }}</p>
-    {% endif %}
     <form action="{{ url_for('chat.register') }}" method="post">
         <div class="form-group">
             <label for="username">Username</label>

@@ -49,10 +49,19 @@
             {% endif %}
         </div>
     </header>
-    <main>
-        {% if turnstile_error %}
-        <p class="generic-error">Captcha failed.</p>
+    {% if message %}
+    <div class="message-container">
+        <p class="message">{{ message }}</p>
+    </div>
+    {% endif %}
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            {% for message in messages %}
+            <p class="message">{{ message }}</p>
+            {% endfor %}
         {% endif %}
+    {% endwith %}
+    <main>
         {% block content %}{% endblock %}
     </main>
 </body>

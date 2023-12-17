@@ -1,4 +1,4 @@
-from flask import request, render_template, redirect, session, Blueprint, url_for
+from flask import request, render_template, redirect, session, Blueprint, url_for, flash
 from ..utils import helpers
 from ..models.area import Area
 from ..models.thread import Thread
@@ -24,7 +24,8 @@ def index():
         
         # Ensure that the area topic meets validation criteria (e.g., length, format).
         if not helpers.is_valid_area_topic(request.form["topic"]):
-            return render_template("index.html", areas=helpers.get_areas(), turnstile_sitekey = helpers.get_turnstile_sitekey(), error=True)
+            flash("Invalid area topic", "error")
+            return render_template("index.html", areas=helpers.get_areas(), turnstile_sitekey = helpers.get_turnstile_sitekey())
         
         # Secret areas can only be created by admins, controlled by a checkbox in the form.
         is_secret = False
@@ -55,7 +56,8 @@ def view_area(area_id):
         
         # Ensure that the thread title meets validation criteria (e.g., length, format).
         if not helpers.is_valid_thread_title(request.form["title"]):
-            return render_template("area.html", area=Area.create_from_db(area_id), turnstile_sitekey = helpers.get_turnstile_sitekey(), error=True)
+            flash("Invalid thread title", "error")
+            return render_template("area.html", area=Area.create_from_db(area_id), turnstile_sitekey = helpers.get_turnstile_sitekey())
         
         # Create a new thread and its first message in the database.
         new_thread = Thread(area_id, request.form["title"], session["user_id"])
@@ -127,6 +129,10 @@ def manage_area_access():
         area_id = request.form["area_id"]
         action = request.form["action"]
 
+        if not helpers.username_exists(username):
+            flash("User does not exist", "error")
+            return redirect(url_for("chat.view_area", area_id=area_id))
+
         # Add or remove a user's access to a secret area based on the action specified.
         if action == "add":
             helpers.add_user_to_secret_area(username, area_id)
@@ -191,13 +197,15 @@ def login():
             return render_template("login.html", turnstile_sitekey = helpers.get_turnstile_sitekey(), turnstile_error=True)
         
         if not helpers.username_exists(request.form["username"]):
-            return render_template("login.html", turnstile_sitekey = helpers.get_turnstile_sitekey(), error=True)
+            flash("Invalid username or password", "error")
+            return render_template("login.html", turnstile_sitekey = helpers.get_turnstile_sitekey())
 
         # Verify user credentials. If valid, retrieve user_id and admin status.
         user_id, is_admin = helpers.verify_login(request)
 
         if not user_id:
-            return render_template("login.html", turnstile_sitekey = helpers.get_turnstile_sitekey(), error=True)
+            flash("Invalid username or password", "error")
+            return render_template("login.html", turnstile_sitekey = helpers.get_turnstile_sitekey())
         
         # Set user session details on successful login.
         session["user_id"] = user_id
@@ -219,22 +227,26 @@ def register():
         # Verify Turnstile (CAPTCHA) response to prevent automated submissions.
         if not helpers.verify_turnstile(request):
             return render_template("register.html", turnstile_sitekey = helpers.get_turnstile_sitekey(), turnstile_error=True)
-        
+
         # Check if the username already exists in the database.
         if helpers.username_exists(request.form["username"]):
-            return render_template("register.html", turnstile_sitekey = helpers.get_turnstile_sitekey(), error="Username taken")
+            flash("Username taken", "error")
+            return render_template("register.html", turnstile_sitekey = helpers.get_turnstile_sitekey())
         
         # Validate the chosen username against specific criteria (e.g., length, characters).
         if not helpers.is_valid_username(request.form["username"]):
-            return render_template("register.html", turnstile_sitekey = helpers.get_turnstile_sitekey(), error="Invalid username")
+            flash("Invalid username", "error")
+            return render_template("register.html", turnstile_sitekey = helpers.get_turnstile_sitekey())
         
         # Ensure the password meets security standards, such as minimum complexity.
         if not helpers.is_password_secure(request.form["password"]):
-            return render_template("register.html", turnstile_sitekey = helpers.get_turnstile_sitekey(), error="Password is too weak")  
+            flash("Password too weak", "error")
+            return render_template("register.html", turnstile_sitekey = helpers.get_turnstile_sitekey())  
          
         # Confirm that the password and confirmation password fields match.
         if request.form["password"] != request.form["confirm_password"]:
-            return render_template("register.html", turnstile_sitekey = helpers.get_turnstile_sitekey(), error="Passwords don't match")
+            flash("Passwords don't match", "error")
+            return render_template("register.html", turnstile_sitekey = helpers.get_turnstile_sitekey())
 
         # Create and insert a new user into the database.
         new_user = User(request.form["username"], request.form["password"])
