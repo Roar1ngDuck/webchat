@@ -1,24 +1,28 @@
-from sqlalchemy import text
 from datetime import datetime
-from ..models.area import Area
+import os
+from os import getenv
+from sqlalchemy import text
 import bcrypt
 from zxcvbn import zxcvbn
-from ..utils.db import Database
 import requests
-from os import getenv
 from flask import session
-import os
+from ..utils.db import Database
+from ..models.area import Area
+
 
 def get_areas(user_id):
     """
-    Fetches a list of discussion areas accessible to the given user.
-    It includes areas open to all users and secret areas for which the user has privileges.
-    This function supports access control by filtering areas based on user privileges and admin status.
+    Fetches a list of areas accessible to a specific user.
+
+    Args:
+        user_id (int): The user ID for whom the accessible areas are to be fetched.
+
+    Returns:
+        list[Area]: A list of Area objects accessible to the user.
     """
 
     areas:list[Area] = []
 
-    # Construct SQL query to fetch areas based on user privileges and admin status.
     sql = text("""
         SELECT a.id, a.topic, a.is_secret
         FROM areas a
@@ -27,7 +31,6 @@ def get_areas(user_id):
         WHERE u.is_admin = true OR a.is_secret = false OR sap.user_id IS NOT NULL
     """)
 
-    # Query the database and create Area objects for each result.
     for result in Database().fetch_all(sql, {"user_id": user_id}):
         area = Area(result["topic"], result["is_secret"], result["id"])
         areas.append(area)
@@ -36,22 +39,29 @@ def get_areas(user_id):
 
 def username_exists(username):
     """
-    Checks if the given username already exists in the database.
-    This is used to prevent duplicate usernames during registration.
+    Checks if a username already exists in the database.
+
+    Args:
+        username (str): The username to check.
+
+    Returns:
+        bool: True if the username exists, False otherwise.
     """
 
-    # Query the database and return a boolean based on the existence of the username.
     sql = text("""SELECT COUNT(*) FROM users u WHERE u.username = :username""")
     return Database().fetch_one(sql, {"username" : username})["count"] != 0
 
 def verify_login(request):
     """
-    Verifies user credentials against the database during login.
-    Utilizes bcrypt for secure password comparison.
-    Returns user ID and admin status if credentials are valid.
+    Verifies user login credentials.
+
+    Args:
+        request (Request): The Flask request object containing form data.
+
+    Returns:
+        tuple: A tuple containing user ID and role if credentials are valid, otherwise (None, None).
     """
 
-    # Query to fetch user data for authentication.
     username = request.form["username"]
     sql = text("""SELECT u.id, u.password, is_admin FROM users u WHERE u.username = :username""")
     result = Database().fetch_one(sql, {"username" : username})
@@ -68,23 +78,38 @@ def verify_login(request):
 def hash_password(password):
     """
     Hashes a password using bcrypt.
-    This is a security measure to ensure that stored passwords are not in plain text.
+
+    Args:
+        password (str): The password to hash.
+
+    Returns:
+        str: The hashed password.
     """
 
     return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
 
 def is_password_secure(password):
     """
-    Evaluates the security of a password using the zxcvbn library.
-    Ensures users choose strong passwords.
+    Checks if a password is secure based on certain criteria.
+
+    Args:
+        password (str): The password to check.
+
+    Returns:
+        bool: True if the password is considered secure, False otherwise.
     """
 
     return zxcvbn(password)["score"] >= 4
 
 def verify_turnstile(request):
     """
-    Verifies the Turnstile (CAPTCHA) response to prevent automated submissions.
-    Enhances security by mitigating bot-based attacks and spam.
+    Verifies a Turnstile CAPTCHA response.
+
+    Args:
+        request (Request): The Flask request object containing form data.
+
+    Returns:
+        bool: True if the CAPTCHA verification is successful, False otherwise.
     """
 
     if getenv("USE_TURNSTILE", "") != "True":
@@ -106,7 +131,13 @@ def verify_turnstile(request):
 
 def time_ago(date):
     """
-    Converts a datetime object to a human-readable time-ago format.
+    Calculates how much time has passed since a given date.
+
+    Args:
+        date (datetime): The date to compare with the current time.
+
+    Returns:
+        str: A human-readable string representing the time elapsed.
     """
 
     now = datetime.now()
@@ -131,11 +162,16 @@ def time_ago(date):
         return f"{int(months)} months ago"
     else:
         return f"{int(years)} years ago"
-    
+
 def is_valid_area_topic(topic):
     """
-    Validates the topic of a discussion area.
-    Ensures that the topic name adheres to predefined length constraints.
+    Validates the topic of an area.
+
+    Args:
+        topic (str): The area topic to validate.
+
+    Returns:
+        bool: True if the topic is valid, False otherwise.
     """
 
     return len(topic) > 0 and len(topic) < 64
@@ -143,28 +179,43 @@ def is_valid_area_topic(topic):
 def is_valid_thread_title(title):
     """
     Validates the title of a thread.
-    Ensures that the thread title adheres to predefined length constraints.
+
+    Args:
+        title (str): The thread title to validate.
+
+    Returns:
+        bool: True if the title is valid, False otherwise.
     """
 
     return len(title) > 0 and len(title) < 64
 
 def is_valid_message(message):
     """
-    Checks if a message meets length requirements.
-    Prevents overly verbose or empty messagess.
+    Validates a message's content.
+
+    Args:
+        message (str): The message to validate.
+
+    Returns:
+        bool: True if the message is valid, False otherwise.
     """
 
     return len(message) > 0 and len(message) < 1024
 
 def is_valid_username(username):
     """
-    Validates a username based on length and character composition.
-    Ensures usernames are of an appropriate length and contain only alphanumeric characters.
+    Validates a username.
+
+    Args:
+        username (str): The username to validate.
+
+    Returns:
+        bool: True if the username is valid, False otherwise.
     """
 
     if len(username) <= 0 or len(username) > 32:
         return False
-    
+
     if not username.isalnum():
         return False
 
@@ -172,8 +223,11 @@ def is_valid_username(username):
 
 def add_user_to_secret_area(username, area_id):
     """
-    Grants a user access to a secret discussion area.
-    Allows administrators to manage user access.
+    Adds a user to a secret area.
+
+    Args:
+        username (str): The username of the user to be added.
+        area_id (int): The ID of the secret area.
     """
 
     sql = text("""INSERT INTO secret_area_privileges (area_id, user_id) VALUES (:area_id, (SELECT id FROM users WHERE username = :username))""")
@@ -181,8 +235,11 @@ def add_user_to_secret_area(username, area_id):
 
 def remove_user_from_secret_area(username, area_id):
     """
-    Revokes a user's access to a secret discussion area.
-    Allows administrators to manage user access.
+    Removes a user from a secret area.
+
+    Args:
+        username (str): The username of the user to be removed.
+        area_id (int): The ID of the secret area.
     """
 
     sql = text("""DELETE FROM secret_area_privileges WHERE area_id = :area_id AND user_id = (SELECT id FROM users WHERE username = :username)""")
@@ -190,8 +247,13 @@ def remove_user_from_secret_area(username, area_id):
 
 def get_access_list(area_id):
     """
-    Retrieves a list of users who have access to a specific secret area.
-    Useful for admins to view and manage access to restricted sections.
+    Retrieves a list of users who have access to a specific area.
+
+    Args:
+        area_id (int): The ID of the area.
+
+    Returns:
+        list: A list of usernames who have access to the area.
     """
 
     sql = text("""SELECT u.username FROM secret_area_privileges s, users u WHERE s.area_id = :area_id AND s.user_id = u.id""")
@@ -199,7 +261,13 @@ def get_access_list(area_id):
 
 def get_message_image(message_id):
     """
-    Retrieves the image file associated with a message.
+    Retrieves the image URL associated with a specific message.
+
+    Args:
+        message_id (int): The ID of the message.
+
+    Returns:
+        str: The URL of the image associated with the message.
     """
 
     sql = text("""SELECT image_url FROM messages WHERE id = :message_id""")
@@ -207,7 +275,12 @@ def get_message_image(message_id):
 
 def delete_message(thread_id, message_id, user_id):
     """
-    Deletes a message from the database and also deletes the thread if the message is the only one in the thread.
+    Deletes a message from a thread.
+
+    Args:
+        thread_id (int): The ID of the thread containing the message.
+        message_id (int): The ID of the message to be deleted.
+        user_id (int): The ID of the user who sent the message.
     """
 
     delete_thread_sql = text("""
@@ -225,13 +298,16 @@ def delete_message(thread_id, message_id, user_id):
 
 def delete_thread(thread_id):
     """
-    Deletes a thread from the database.
+    Deletes a thread and its associated messages.
+
+    Args:
+        thread_id (int): The ID of the thread to be deleted.
     """
 
     sql = text("""SELECT image_url FROM messages WHERE thread = :thread_id""")
     image_urls = Database().fetch_all(sql, {"thread_id": thread_id})
     for image_url in image_urls:
-        if image_url["image_url"] != None:
+        if not image_url["image_url"]:
             os.remove("./app" + image_url["image_url"])
 
     sql = text("""DELETE FROM threads WHERE id = :thread_id""")
@@ -239,23 +315,48 @@ def delete_thread(thread_id):
 
 def delete_area(area_id):
     """
-    Deletes an area from the database.
+    Deletes an area and its associated threads and messages.
+
+    Args:
+        area_id (int): The ID of the area to be deleted.
     """
 
     sql = text("""SELECT image_url FROM messages WHERE thread in (SELECT id FROM threads WHERE area = :area_id)""")
     image_urls = Database().fetch_all(sql, {"area_id": area_id})
     for image_url in image_urls:
-        if image_url["image_url"] != None:
+        if not image_url["image_url"]:
             os.remove("./app" + image_url["image_url"])
 
     sql = text("""DELETE FROM areas WHERE id = :area_id""")
     Database().execute(sql, {"area_id": area_id}, False)
 
 def get_turnstile_sitekey():
+    """
+    Retrieves the Turnstile site key from environment variables.
+
+    The function checks for a site key for the Turnstile CAPTCHA service, 
+    which is used in the frontend for CAPTCHA verification.
+
+    Returns:
+        str or None: The Turnstile site key or None if not set.
+    """
     return getenv("TURNSTILE_SITEKEY", None)
 
 def full_search(query):
-    # SQL queries to search areas, threads, and messages
+    """
+    Performs a full text search across areas, threads, and messages in the database.
+
+    The function executes SQL queries to search for the provided query string in
+    topics of areas, titles of threads, and text of messages.
+
+    Args:
+        query (str): The search query string.
+
+    Returns:
+        tuple: A tuple containing three lists for areas, threads, and messages 
+               where each list contains dictionaries of the respective query results.
+    """
+
     area_sql = text("SELECT * FROM areas WHERE topic ILIKE :query")
     thread_sql = text("""
         SELECT t.*, a.topic as area_topic 
@@ -278,4 +379,14 @@ def full_search(query):
     return areas, threads, messages
 
 def is_admin():
+    """
+    Checks if the current session is associated with an admin user.
+
+    This function checks the user's session to determine if the current user 
+    is marked as an 'admin' in the session data.
+
+    Returns:
+        bool: True if the current session is for an admin user, False otherwise.
+    """
+
     return session["user"] == "admin"

@@ -1,3 +1,6 @@
+from pathlib import Path
+import uuid
+import os
 from flask import request, render_template, redirect, session, Blueprint, url_for, flash
 from flask_wtf.csrf import generate_csrf
 from ..utils import helpers
@@ -6,9 +9,7 @@ from ..models.thread import Thread
 from ..models.user import User
 from ..models.message import Message
 from ..utils.decorators import login_required, captcha_required
-from pathlib import Path
-import uuid
-import os
+
 
 # Blueprint setup for chat functionality, enabling modularization and URL prefixing.
 chat_blueprint = Blueprint('chat', __name__, url_prefix='/', static_folder='../static')
@@ -18,7 +19,7 @@ chat_blueprint = Blueprint('chat', __name__, url_prefix='/', static_folder='../s
 @login_required
 def index():
     user_id = session["user_id"]
-    return render_template("index.html", areas=helpers.get_areas(user_id), is_admin=helpers.is_admin(), turnstile_sitekey = helpers.get_turnstile_sitekey(), csrf_token=generate_csrf())
+    return render_template("index.html", areas=helpers.get_areas(user_id), is_admin=helpers.is_admin(), turnstile_sitekey=helpers.get_turnstile_sitekey(), csrf_token=generate_csrf())
 
 @chat_blueprint.route("/create_area", methods=['POST'])
 @login_required
@@ -26,10 +27,11 @@ def index():
 def create_area():
     # Validate area topic
     if not helpers.is_valid_area_topic(request.form["topic"]):
+        user_id = session["user_id"]
         flash("Invalid area topic", "error")
-        return render_template("index.html", areas=helpers.get_areas(), turnstile_sitekey = helpers.get_turnstile_sitekey(), csrf_token=generate_csrf())
-    
-    is_secret = True if helpers.is_admin() and request.form.get("is_secret", "") == "on" else False
+        return render_template("index.html", areas=helpers.get_areas(user_id), turnstile_sitekey=helpers.get_turnstile_sitekey(), csrf_token=generate_csrf())
+
+    is_secret = helpers.is_admin() and request.form.get("is_secret", "") == "on"
 
     # Create and insert the new discussion area into the database.
     new_area = Area(request.form["topic"], is_secret)
@@ -46,7 +48,7 @@ def view_area(area_id):
     user_id = session["user_id"]
     area = Area.create_from_db(area_id, user_id)
 
-    if area == None:
+    if not area:
         flash("Area does not exist", "error")
         return redirect(url_for("chat.index"))
 
@@ -54,15 +56,16 @@ def view_area(area_id):
     access_list = helpers.get_access_list(area.id) if area.is_secret and helpers.is_admin() else []
 
     # Render the area page with appropriate data and access controls.
-    return render_template("area.html", area=area, is_admin=helpers.is_admin(), access_list=access_list, turnstile_sitekey = helpers.get_turnstile_sitekey(), csrf_token=generate_csrf())
+    return render_template("area.html", area=area, is_admin=helpers.is_admin(), access_list=access_list, turnstile_sitekey=helpers.get_turnstile_sitekey(), csrf_token=generate_csrf())
 
 @chat_blueprint.route("/area/<int:area_id>/create_thread", methods=['POST'])
 def create_thread(area_id):
     # Validate title
     if not helpers.is_valid_thread_title(request.form["title"]):
+        user_id = session["user_id"]
         flash("Invalid thread title", "error")
-        return render_template("area.html", area=Area.create_from_db(area_id), turnstile_sitekey = helpers.get_turnstile_sitekey(), csrf_token=generate_csrf())
-    
+        return render_template("area.html", area=Area.create_from_db(area_id, user_id), turnstile_sitekey=helpers.get_turnstile_sitekey(), csrf_token=generate_csrf())
+
     # Create a new thread and its first message in the database.
     new_thread = Thread(area_id, request.form["title"], session["user_id"])
     new_thread.insert()
@@ -78,11 +81,11 @@ def create_thread(area_id):
 def view_thread(thread_id):
     # Render the thread page, including all its messages. If thread doesn't exist, redirect back to home page.
     thread = Thread.create_from_db(thread_id)
-    if thread == None:
+    if not thread:
         flash("Thread does not exist", "error")
         return redirect(url_for("chat.index"))
-    return render_template("thread.html", thread=thread, turnstile_sitekey = helpers.get_turnstile_sitekey(), is_admin=helpers.is_admin(), csrf_token=generate_csrf())
-    
+    return render_template("thread.html", thread=thread, turnstile_sitekey=helpers.get_turnstile_sitekey(), is_admin=helpers.is_admin(), csrf_token=generate_csrf())
+
 @chat_blueprint.route("/thread/<int:thread_id>/send_message", methods=['POST'])
 @login_required
 @captcha_required
@@ -90,7 +93,7 @@ def send_message(thread_id):
     # Validate message
     if not helpers.is_valid_message(request.form["message"]):
         flash("Invalid message", "error")
-        return render_template("thread.html", thread=Thread.create_from_db(thread_id), turnstile_sitekey = helpers.get_turnstile_sitekey(), csrf_token=generate_csrf())
+        return render_template("thread.html", thread=Thread.create_from_db(thread_id), turnstile_sitekey=helpers.get_turnstile_sitekey(), csrf_token=generate_csrf())
     
     filename = None
     if "image" in request.files and request.files["image"].filename != "":
@@ -133,7 +136,7 @@ def manage_area_access():
 def delete_thread(thread_id):
     thread = Thread.create_from_db(thread_id)
 
-    if thread == None:
+    if not thread:
         flash("Thread does not exist", "error")
         return redirect(url_for("chat.index"))
 
@@ -150,7 +153,7 @@ def delete_thread(thread_id):
 @login_required
 def delete_message(message_id, thread_id):
     image = helpers.get_message_image(message_id)
-    if image != None:
+    if image:
         os.remove("./app" + image)
 
     helpers.delete_message(thread_id, message_id, session["user_id"])
@@ -172,7 +175,7 @@ def delete_area(area_id):
 @login_required
 def search():
     query = request.args.get('query', '')
-    
+
     areas, threads, messages = helpers.full_search(query)
 
     return render_template("search_results.html", areas=areas, threads=threads, messages=messages, csrf_token=generate_csrf())
@@ -182,21 +185,21 @@ def search():
 def login():
     # Display login form on GET request.
     if request.method == "GET":
-        return render_template("login.html", turnstile_sitekey = helpers.get_turnstile_sitekey(), csrf_token=generate_csrf())
-    
+        return render_template("login.html", turnstile_sitekey=helpers.get_turnstile_sitekey(), csrf_token=generate_csrf())
+
     # Handle login form submission on POST request.
     if request.method == "POST":
         if not helpers.username_exists(request.form["username"]):
             flash("Invalid username or password", "error")
-            return render_template("login.html", turnstile_sitekey = helpers.get_turnstile_sitekey(), csrf_token=generate_csrf())
+            return render_template("login.html", turnstile_sitekey=helpers.get_turnstile_sitekey(), csrf_token=generate_csrf())
 
         # Verify user credentials. If valid, retrieve user_id and admin status.
         user_id, user_type = helpers.verify_login(request)
 
         if not user_id:
             flash("Invalid username or password", "error")
-            return render_template("login.html", turnstile_sitekey = helpers.get_turnstile_sitekey(), csrf_token=generate_csrf())
-        
+            return render_template("login.html", turnstile_sitekey=helpers.get_turnstile_sitekey(), csrf_token=generate_csrf())
+
         # Set user session details on successful login.
         session["user_id"] = user_id
         session["username"] = request.form["username"]
@@ -204,36 +207,36 @@ def login():
 
         # Redirect to the main page after successful login.
         return redirect(url_for("chat.index"))
-    
-    
+
+
 @chat_blueprint.route("/register", methods=['GET', 'POST'])
 @captcha_required
 def register():
     # Display registration form on GET request.
     if request.method == "GET":
-        return render_template("register.html", turnstile_sitekey = helpers.get_turnstile_sitekey(), csrf_token=generate_csrf())
-    
+        return render_template("register.html", turnstile_sitekey=helpers.get_turnstile_sitekey(), csrf_token=generate_csrf())
+
     # Process registration form submission on POST request.
     if request.method == "POST":
         # Check if the username already exists in the database.
         if helpers.username_exists(request.form["username"]):
             flash("Username taken", "error")
-            return render_template("register.html", turnstile_sitekey = helpers.get_turnstile_sitekey(), csrf_token=generate_csrf())
-        
+            return render_template("register.html", turnstile_sitekey=helpers.get_turnstile_sitekey(), csrf_token=generate_csrf())
+
         # Validate the chosen username against specific criteria (e.g., length, characters).
         if not helpers.is_valid_username(request.form["username"]):
             flash("Invalid username", "error")
-            return render_template("register.html", turnstile_sitekey = helpers.get_turnstile_sitekey(), csrf_token=generate_csrf())
-        
+            return render_template("register.html", turnstile_sitekey=helpers.get_turnstile_sitekey(), csrf_token=generate_csrf())
+
         # Ensure the password meets security standards, such as minimum complexity.
         if not helpers.is_password_secure(request.form["password"]):
             flash("Password too weak", "error")
-            return render_template("register.html", turnstile_sitekey = helpers.get_turnstile_sitekey(), csrf_token=generate_csrf())  
-         
+            return render_template("register.html", turnstile_sitekey=helpers.get_turnstile_sitekey(), csrf_token=generate_csrf())  
+
         # Confirm that the password and confirmation password fields match.
         if request.form["password"] != request.form["confirm_password"]:
             flash("Passwords don't match", "error")
-            return render_template("register.html", turnstile_sitekey = helpers.get_turnstile_sitekey(), csrf_token=generate_csrf())
+            return render_template("register.html", turnstile_sitekey=helpers.get_turnstile_sitekey(), csrf_token=generate_csrf())
 
         # Create and insert a new user into the database.
         new_user = User(request.form["username"], request.form["password"])
@@ -241,7 +244,7 @@ def register():
 
         # Redirect the user to the login page after successful registration.
         return redirect(url_for("chat.login"))
-    
+
 
 @chat_blueprint.route("/logout")
 def logout():
