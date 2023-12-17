@@ -85,6 +85,9 @@ def create_thread(area_id):
 def view_thread(thread_id):
     user_id = session['user_id']
     thread = Thread.create_from_db(thread_id)
+    if not thread:
+        flash("Thread does not exist", "error")
+        return redirect(url_for("chat.index"))
     is_subscribed = helpers.is_subscribed(thread_id, user_id)
 
     return render_template("thread.html", thread=thread, turnstile_sitekey=helpers.get_turnstile_sitekey(), is_admin=helpers.is_admin(), csrf_token=generate_csrf(), is_subscribed=is_subscribed, notifications=helpers.get_notifications(user_id))
