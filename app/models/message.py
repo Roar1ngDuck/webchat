@@ -62,7 +62,7 @@ class Message:
             Message or None: An instance of Message if found, otherwise None.
         """
         sql = text("""
-        SELECT m.id, m.thread, m.sender, m.text, m.image_url, m.sent_time, 
+        SELECT m.id, m.thread, m.sender, m.text, m.image_url, m.sent_time,
             t.title as thread_title, u.username as sender_name
         FROM messages m
         JOIN threads t ON m.thread = t.id
