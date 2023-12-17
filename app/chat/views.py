@@ -4,7 +4,7 @@ from ..models.area import Area
 from ..models.thread import Thread
 from ..models.user import User
 from ..models.message import Message
-from ..utils.decorators import login_required
+from ..utils.decorators import login_required, captcha_required
 from pathlib import Path
 import uuid
 
@@ -15,13 +15,10 @@ chat_blueprint = Blueprint('chat', __name__, url_prefix='/', static_folder='../s
 # Route for the main page, handling both display and creation of discussion areas.
 @chat_blueprint.route("/", methods=['GET', 'POST'])
 @login_required
+@captcha_required
 def index():
     # Handling area creation on POST request, with various validations.
     if request.method == "POST":
-        # Verify Turnstile (CAPTCHA) response to prevent automated submissions.
-        if not helpers.verify_turnstile(request):
-            return render_template("index.html", areas=helpers.get_areas(), turnstile_sitekey = helpers.get_turnstile_sitekey(), turnstile_error=True)
-        
         # Ensure that the area topic meets validation criteria (e.g., length, format).
         if not helpers.is_valid_area_topic(request.form["topic"]):
             flash("Invalid area topic", "error")
@@ -47,13 +44,10 @@ def index():
 # Route for viewing and interacting with a specific discussion area.
 @chat_blueprint.route("/area/<int:area_id>", methods=['GET', 'POST'])
 @login_required
+@captcha_required
 def view_area(area_id):
     # Handle POST requests for creating a new thread within a discussion area.
     if request.method == "POST":
-        # Verify Turnstile (CAPTCHA) response to prevent automated submissions.
-        if not helpers.verify_turnstile(request):
-            return render_template("area.html", area=Area.create_from_db(area_id), turnstile_sitekey = helpers.get_turnstile_sitekey(), turnstile_error=True)
-        
         # Ensure that the thread title meets validation criteria (e.g., length, format).
         if not helpers.is_valid_thread_title(request.form["title"]):
             flash("Invalid thread title", "error")
@@ -85,13 +79,10 @@ def view_area(area_id):
 # Route for viewing and interacting with a specific thread.
 @chat_blueprint.route("/thread/<int:thread_id>", methods=['GET', 'POST'])
 @login_required
+@captcha_required
 def view_thread(thread_id):
     # Handle POST requests for adding new messages to the thread.
     if request.method == "POST":
-        # Verify Turnstile (CAPTCHA) response to prevent automated submissions.
-        if not helpers.verify_turnstile(request):
-            return render_template("thread.html", thread=Thread.create_from_db(thread_id), turnstile_sitekey = helpers.get_turnstile_sitekey(), turnstile_error=True)
-        
         # Ensure that the message content meets validation criteria (e.g., length, format).
         if not helpers.is_valid_message(request.form["message"]):
             return render_template("thread.html", thread=Thread.create_from_db(thread_id), turnstile_sitekey = helpers.get_turnstile_sitekey(), error=True)
@@ -185,6 +176,7 @@ def search():
     return render_template("search_results.html", areas=areas, threads=threads, messages=messages)
 
 @chat_blueprint.route("/login", methods=['GET', 'POST'])
+@captcha_required
 def login():
     # Display login form on GET request.
     if request.method == "GET":
@@ -217,6 +209,7 @@ def login():
     
     
 @chat_blueprint.route("/register", methods=['GET', 'POST'])
+@captcha_required
 def register():
     # Display registration form on GET request.
     if request.method == "GET":
@@ -224,10 +217,6 @@ def register():
     
     # Process registration form submission on POST request.
     if request.method == "POST":
-        # Verify Turnstile (CAPTCHA) response to prevent automated submissions.
-        if not helpers.verify_turnstile(request):
-            return render_template("register.html", turnstile_sitekey = helpers.get_turnstile_sitekey(), turnstile_error=True)
-
         # Check if the username already exists in the database.
         if helpers.username_exists(request.form["username"]):
             flash("Username taken", "error")
