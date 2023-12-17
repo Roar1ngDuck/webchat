@@ -279,6 +279,10 @@ main {
     background-color: #5f332e;
 }
 
+.logout-button, .modern-button {
+    margin-right: 0.5rem;
+}
+
 /* Username Display Styles */
 /* Style for the username display area */
 .username-display {
