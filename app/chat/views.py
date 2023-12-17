@@ -16,7 +16,7 @@ chat_blueprint = Blueprint('chat', __name__, url_prefix='/', static_folder='../s
 @login_required
 def index():
     user_id = session["user_id"]
-    return render_template("index.html", areas=helpers.get_areas(user_id), is_admin=session["is_admin"] == "True", turnstile_sitekey = helpers.get_turnstile_sitekey())
+    return render_template("index.html", areas=helpers.get_areas(user_id), is_admin=helpers.is_admin(), turnstile_sitekey = helpers.get_turnstile_sitekey())
 
 @chat_blueprint.route("/create_area", methods=['POST'])
 @login_required
@@ -27,7 +27,7 @@ def create_area():
         flash("Invalid area topic", "error")
         return render_template("index.html", areas=helpers.get_areas(), turnstile_sitekey = helpers.get_turnstile_sitekey())
     
-    is_secret = True if session["is_admin"] == "True" and request.form.get("is_secret", "") == "on" else False
+    is_secret = True if helpers.is_admin() and request.form.get("is_secret", "") == "on" else False
 
     # Create and insert the new discussion area into the database.
     new_area = Area(request.form["topic"], is_secret)
@@ -49,10 +49,10 @@ def view_area(area_id):
         return redirect(url_for("chat.index"))
 
     # If the area is secret and the user is an admin, fetch a list of users with access.
-    access_list = helpers.get_access_list(area.id) if area.is_secret and session["is_admin"] == "True" else []
+    access_list = helpers.get_access_list(area.id) if area.is_secret and helpers.is_admin() else []
 
     # Render the area page with appropriate data and access controls.
-    return render_template("area.html", area=area, is_admin=session["is_admin"] == "True", access_list=access_list, turnstile_sitekey = helpers.get_turnstile_sitekey())
+    return render_template("area.html", area=area, is_admin=helpers.is_admin(), access_list=access_list, turnstile_sitekey = helpers.get_turnstile_sitekey())
 
 @chat_blueprint.route("/area/<int:area_id>/create_thread", methods=['POST'])
 def create_thread(area_id):
@@ -79,7 +79,7 @@ def view_thread(thread_id):
     if thread == None:
         flash("Thread does not exist", "error")
         return redirect(url_for("chat.index"))
-    return render_template("thread.html", thread=thread, turnstile_sitekey = helpers.get_turnstile_sitekey(), is_admin=session["is_admin"] == "True")
+    return render_template("thread.html", thread=thread, turnstile_sitekey = helpers.get_turnstile_sitekey(), is_admin=helpers.is_admin())
     
 @chat_blueprint.route("/thread/<int:thread_id>/send_message", methods=['POST'])
 @login_required
@@ -189,7 +189,7 @@ def login():
             return render_template("login.html", turnstile_sitekey = helpers.get_turnstile_sitekey())
 
         # Verify user credentials. If valid, retrieve user_id and admin status.
-        user_id, is_admin = helpers.verify_login(request)
+        user_id, user_type = helpers.verify_login(request)
 
         if not user_id:
             flash("Invalid username or password", "error")
@@ -198,7 +198,7 @@ def login():
         # Set user session details on successful login.
         session["user_id"] = user_id
         session["username"] = request.form["username"]
-        session["is_admin"] = "True" if is_admin else "False"
+        session["user"] = user_type
 
         # Redirect to the main page after successful login.
         return redirect(url_for("chat.index"))

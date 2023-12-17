@@ -6,6 +6,7 @@ from zxcvbn import zxcvbn
 from ..utils.db import Database
 import requests
 from os import getenv
+from flask import session
 
 def get_areas(user_id):
     """
@@ -59,7 +60,7 @@ def verify_login(request):
 
     # Check password validity with bcrypt and return user details if authentication succeeds.
     if bcrypt.checkpw(request.form["password"].encode('utf-8'), result["password"].tobytes()):
-        return (result["id"], result["is_admin"])
+        return (result["id"], "admin" if result["is_admin"] else "user")
 
     return (None, None)
 
@@ -254,3 +255,6 @@ def full_search(query):
     messages = Database().fetch_all(message_sql, {"query": f"%{query}%"})
 
     return areas, threads, messages
+
+def is_admin():
+    return session["user"] == "admin"
