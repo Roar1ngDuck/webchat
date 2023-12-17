@@ -54,10 +54,19 @@
         <p class="message">{{ message }}</p>
     </div>
     {% endif %}
-    {% with messages = get_flashed_messages() %}
+    {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
-            {% for message in messages %}
-            <p class="message">{{ message }}</p>
+            {% for category, message in messages %}
+            {% if category == "error" %}
+            <div class="message-container">
+                <p class="message red-border">{{ message }}</p>
+            </div>
+            {% else %}
+            <div class="message-container">
+                <p class="message">{{ message }}</p>
+            </div>
+            {% endif %}
+            
             {% endfor %}
         {% endif %}
     {% endwith %}
