@@ -37,8 +37,9 @@
         <input type="hidden" name="csrf_token" value="{{ csrf_token }}"/>
         <textarea name="message" rows="5" required></textarea>
         <div class="form-group">
-            <label for="image">Upload Image (optional)</label>
-            <input type="file" id="image" name="image" accept="image/*">
+            <label for="image" class="file-input-label">Upload Image (optional)</label>
+            <input type="file" id="image" name="image" accept="image/*" class="hidden-file-input">
+            <label for="image" class="file-input-button">Choose File</label>
         </div>
         {% if turnstile_sitekey %}
             <div class="cf-turnstile" data-sitekey="{{ turnstile_sitekey }}"></div>

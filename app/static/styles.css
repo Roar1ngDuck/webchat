@@ -476,3 +476,37 @@ main {
 .red-border {
     border: 1px solid rgb(199, 32, 32);
 }
+
+/* Custom File Input Button */
+.file-input-button {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    margin-bottom: 0.5rem;
+    border: 1px solid rgb(128, 114, 228);
+    background-color: #2c3133;
+    color: white;
+    cursor: pointer;
+    font-size: 1rem;
+    text-align: center;
+    width: 25%;
+}
+
+@media (max-width: 767px) {
+    .file-input-button {
+        width: 100%; /* Full width on mobile devices */
+    }
+}
+
+.file-input-button:hover {
+    background-color: #394245;
+}
+
+/* Hide the default file input */
+.hidden-file-input {
+    width: 0.1px;
+    height: 0.1px;
+    opacity: 0;
+    overflow: hidden;
+    position: absolute;
+    z-index: -1;
+}
