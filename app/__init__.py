@@ -2,12 +2,14 @@ from flask import Flask
 from os import getenv
 from dotenv import load_dotenv
 from .chat.views import chat_blueprint
+from flask_wtf.csrf import CSRFProtect
 
 def create_app():
     load_dotenv()
 
     app = Flask(__name__)
     app.secret_key = getenv("SECRET_KEY")
+    csrf = CSRFProtect(app)
     
     if getenv("ENV", "") == "PROD":
         app.config.update(
