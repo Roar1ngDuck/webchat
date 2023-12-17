@@ -103,11 +103,12 @@ cp .env.test.example .env.test</code></pre>
   <li><strong>Viewing Areas:</strong> Users can see a list of all discussion areas on the homepage along with the number of threads and messages in each area, and when the last message was sent.</li>
   <li><strong>Thread Creation:</strong> Users can create a new thread in an area by providing a thread title and the content of the initial message.</li>
   <li><strong>Search:</strong> Users can search area topics, thread titles, and message content for given text.</li>
+  <li><strong>Subscriptions:</strong> Users can subscribe to threads and they will receive a notification when a new message is posted.</li>
 </ul>
 
 <h3>Messaging</h3>
 <ul>
-  <li><strong>Posting Messages:</strong> Users can write a new message in an existing thread.</li>
+  <li><strong>Posting Messages:</strong> Users can write a new message in an existing thread and edit previously sent ones. Messages can optionally include images.</li>
   <li><strong>Message Deletion and Editing:</strong> Users can delete their messages and threads they have created.</li>
   <li><strong>Thread and Area Deletion:</strong> Administrators can delete threads and areas.</li>
 </ul>
