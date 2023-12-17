@@ -12,131 +12,127 @@ import uuid
 chat_blueprint = Blueprint('chat', __name__, url_prefix='/', static_folder='../static')
 
 
-# Route for the main page, handling both display and creation of discussion areas.
-@chat_blueprint.route("/", methods=['GET', 'POST'])
+@chat_blueprint.route("/", methods=['GET'])
 @login_required
-@captcha_required
 def index():
-    # Handling area creation on POST request, with various validations.
-    if request.method == "POST":
-        # Ensure that the area topic meets validation criteria (e.g., length, format).
-        if not helpers.is_valid_area_topic(request.form["topic"]):
-            flash("Invalid area topic", "error")
-            return render_template("index.html", areas=helpers.get_areas(), turnstile_sitekey = helpers.get_turnstile_sitekey())
-        
-        # Secret areas can only be created by admins, controlled by a checkbox in the form.
-        is_secret = False
-        if session["is_admin"] == "True" and request.form.get("is_secret", "") == "on":
-            is_secret = True
-
-        # Create and insert the new discussion area into the database.
-        new_area = Area(request.form["topic"], is_secret)
-        new_area.insert()
-
-        # Redirect back to home page after creating new area.
-        return redirect(url_for("chat.index"))
-
-    # Display areas based on user credentials and area access rights.
     user_id = session["user_id"]
     return render_template("index.html", areas=helpers.get_areas(user_id), is_admin=session["is_admin"] == "True", turnstile_sitekey = helpers.get_turnstile_sitekey())
 
+@chat_blueprint.route("/create_area", methods=['POST'])
+@login_required
+@captcha_required
+def create_area():
+    # Validate area topic
+    if not helpers.is_valid_area_topic(request.form["topic"]):
+        flash("Invalid area topic", "error")
+        return render_template("index.html", areas=helpers.get_areas(), turnstile_sitekey = helpers.get_turnstile_sitekey())
+    
+    is_secret = True if session["is_admin"] == "True" and request.form.get("is_secret", "") == "on" else False
 
-# Route for viewing and interacting with a specific discussion area.
-@chat_blueprint.route("/area/<int:area_id>", methods=['GET', 'POST'])
+    # Create and insert the new discussion area into the database.
+    new_area = Area(request.form["topic"], is_secret)
+    new_area.insert()
+
+    # Redirect back to home page after creating new area.
+    flash("Area created successfully", "success")
+    return redirect(url_for("chat.index"))
+
+@chat_blueprint.route("/area/<int:area_id>", methods=['GET'])
 @login_required
 @captcha_required
 def view_area(area_id):
-    # Handle POST requests for creating a new thread within a discussion area.
-    if request.method == "POST":
-        # Ensure that the thread title meets validation criteria (e.g., length, format).
-        if not helpers.is_valid_thread_title(request.form["title"]):
-            flash("Invalid thread title", "error")
-            return render_template("area.html", area=Area.create_from_db(area_id), turnstile_sitekey = helpers.get_turnstile_sitekey())
-        
-        # Create a new thread and its first message in the database.
-        new_thread = Thread(area_id, request.form["title"], session["user_id"])
-        new_thread.insert()
-        new_message = Message(new_thread.id, session["user_id"], request.form["message"])
-        new_message.insert()
-
-        # Redirect back to the area page after creating a new thread.
-        return redirect(url_for("chat.view_area", area_id=area_id))
-
-    # Retrieve user_id from session for access control and personalization.
     user_id = session["user_id"]
-    # Fetch details of the area, including access control for secret areas.
     area = Area.create_from_db(area_id, user_id)
 
+    if area == None:
+        flash("Area does not exist", "error")
+        return redirect(url_for("chat.index"))
+
     # If the area is secret and the user is an admin, fetch a list of users with access.
-    access_list = []
-    if area.is_secret and session["is_admin"] == "True":
-        access_list = helpers.get_access_list(area.id)
+    access_list = helpers.get_access_list(area.id) if area.is_secret and session["is_admin"] == "True" else []
 
     # Render the area page with appropriate data and access controls.
     return render_template("area.html", area=area, is_admin=session["is_admin"] == "True", access_list=access_list, turnstile_sitekey = helpers.get_turnstile_sitekey())
 
+@chat_blueprint.route("/area/<int:area_id>/create_thread", methods=['POST'])
+def create_thread(area_id):
+    # Validate title
+    if not helpers.is_valid_thread_title(request.form["title"]):
+        flash("Invalid thread title", "error")
+        return render_template("area.html", area=Area.create_from_db(area_id), turnstile_sitekey = helpers.get_turnstile_sitekey())
+    
+    # Create a new thread and its first message in the database.
+    new_thread = Thread(area_id, request.form["title"], session["user_id"])
+    new_thread.insert()
+    new_message = Message(new_thread.id, session["user_id"], request.form["message"])
+    new_message.insert()
 
-# Route for viewing and interacting with a specific thread.
-@chat_blueprint.route("/thread/<int:thread_id>", methods=['GET', 'POST'])
+    # Redirect back to the area page after creating a new thread.
+    flash("Thread created successfully", "success")
+    return redirect(url_for("chat.view_area", area_id=area_id))
+
+@chat_blueprint.route("/thread/<int:thread_id>", methods=['GET'])
 @login_required
-@captcha_required
 def view_thread(thread_id):
-    # Handle POST requests for adding new messages to the thread.
-    if request.method == "POST":
-        # Ensure that the message content meets validation criteria (e.g., length, format).
-        if not helpers.is_valid_message(request.form["message"]):
-            return render_template("thread.html", thread=Thread.create_from_db(thread_id), turnstile_sitekey = helpers.get_turnstile_sitekey(), error=True)
-        
-        filename = None
-        if "image" in request.files and request.files["image"].filename != "":
-            Path("./app/static/uploads").mkdir(parents=True, exist_ok=True)
-            image = request.files["image"]
-            rand = str(uuid.uuid4())
-            filename = "./app/static/uploads/" + rand + ".jpg"
-            image.save(filename)
-            filename = "/static/uploads/" + rand + ".jpg"
-
-         # Create and insert the new message into the thread.
-        new_message = Message(thread_id, session["user_id"], request.form["message"], image_url=filename)
-        new_message.insert()
-
-        # Redirect back to the thread page after adding a new message.
-        return redirect(url_for("chat.view_thread", thread_id=thread_id))
-
     # Render the thread page, including all its messages. If thread doesn't exist, redirect back to home page.
     thread = Thread.create_from_db(thread_id)
     if thread == None:
+        flash("Thread does not exist", "error")
         return redirect(url_for("chat.index"))
     return render_template("thread.html", thread=thread, turnstile_sitekey = helpers.get_turnstile_sitekey(), is_admin=session["is_admin"] == "True")
     
+@chat_blueprint.route("/thread/<int:thread_id>/send_message", methods=['POST'])
+@login_required
+@captcha_required
+def send_message(thread_id):
+    # Validate message
+    if not helpers.is_valid_message(request.form["message"]):
+        return render_template("thread.html", thread=Thread.create_from_db(thread_id), turnstile_sitekey = helpers.get_turnstile_sitekey(), error=True)
+    
+    filename = None
+    if "image" in request.files and request.files["image"].filename != "":
+        Path("./app/static/uploads").mkdir(parents=True, exist_ok=True)
+        image = request.files["image"]
+        rand = str(uuid.uuid4())
+        filename = "./app/static/uploads/" + rand + ".jpg"
+        image.save(filename)
+        filename = "/static/uploads/" + rand + ".jpg"
+
+        # Create and insert the new message into the thread.
+    new_message = Message(thread_id, session["user_id"], request.form["message"], image_url=filename)
+    new_message.insert()
+
+    # Redirect back to the thread page after adding a new message.
+    return redirect(url_for("chat.view_thread", thread_id=thread_id))
 
 @chat_blueprint.route("/manage_area_access", methods=['POST'])
 @login_required
 def manage_area_access():
-    # Handle POST request to manage user access to secret areas.
-    if request.method == "POST":
-        # Extract necessary data from the form.
-        username = request.form["username"]
-        area_id = request.form["area_id"]
-        action = request.form["action"]
+    username = request.form["username"]
+    area_id = request.form["area_id"]
+    action = request.form["action"]
 
-        if not helpers.username_exists(username):
-            flash("User does not exist", "error")
-            return redirect(url_for("chat.view_area", area_id=area_id))
+    if not helpers.username_exists(username):
+        flash("User does not exist", "error")
+        return redirect(url_for("chat.view_area", area_id=area_id))
 
-        # Add or remove a user's access to a secret area based on the action specified.
-        if action == "add":
-            helpers.add_user_to_secret_area(username, area_id)
-        elif action == "remove":
-            helpers.remove_user_from_secret_area(username, area_id)
+    if action == "add":
+        helpers.add_user_to_secret_area(username, area_id)
+        flash(f"Added user {username} to access list", "success")
+    elif action == "remove":
+        helpers.remove_user_from_secret_area(username, area_id)
+        flash(f"Removed user {username} from access list", "success")
 
-        # Redirect back to the area management page after updating access controls.
-        return redirect(url_for("chat.view_area", area_id=request.form["area_id"]))
+    return redirect(url_for("chat.view_area", area_id=request.form["area_id"]))
 
 @chat_blueprint.route("/delete_thread/<int:thread_id>", methods=['POST'])
 @login_required
 def delete_thread(thread_id):
     thread = Thread.create_from_db(thread_id)
+
+    if thread == None:
+        flash("Thread does not exist", "error")
+        return redirect(url_for("chat.index"))
 
      # Redirect with to index if not authorized
     if session["user_id"] != thread.owner_id and session["is_admin"] != "True":
@@ -163,7 +159,7 @@ def delete_area(area_id):
         return redirect(url_for("chat.index"))
 
     helpers.delete_area(area_id)
-
+    flash("Area deleted successfully", "success")
     return redirect(url_for("chat.index"))
 
 @chat_blueprint.route("/search", methods=['GET'])
@@ -245,7 +241,6 @@ def register():
         return redirect(url_for("chat.login"))
     
 
-# Handle user logout, clearing session data.
 @chat_blueprint.route("/logout")
 def logout():
     # Remove user identification and session data. Uses 'None' as default to avoid KeyError.

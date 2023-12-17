@@ -33,7 +33,7 @@
         <p>No messages yet.</p>
         {% endfor %}
     </section>
-    <form action="{{ url_for('chat.view_thread', thread_id=thread.id) }}" method="post" id="message-form" enctype="multipart/form-data">
+    <form action="{{ url_for('chat.send_message', thread_id=thread.id) }}" method="post" id="message-form" enctype="multipart/form-data">
         <textarea name="message" rows="5" required></textarea>
         <div class="form-group">
             <label for="image">Upload Image (optional)</label>

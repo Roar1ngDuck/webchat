@@ -20,14 +20,13 @@ class Area:
         WHERE a.id = :area_id AND (u.is_admin = true OR a.is_secret = false OR sap.user_id IS NOT NULL)
         """)
 
-        result = Database().fetch_one(sql, {"area_id": area_id, "user_id": user_id})
-
-        if result:
+        try:
+            result = Database().fetch_one(sql, {"area_id": area_id, "user_id": user_id})
             instance = cls(result["topic"], result["is_secret"], area_id)
             return instance
-        else:
+        except:
             return None
-    
+        
     @property
     def thread_count(self):
         sql = text("""SELECT COUNT(*) FROM threads t WHERE t.area = :area_id""")
