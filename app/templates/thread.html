@@ -39,7 +39,9 @@
             <label for="image">Upload Image (optional)</label>
             <input type="file" id="image" name="image" accept="image/*">
         </div>
-        <div class="cf-turnstile" data-sitekey="{{ turnstile_sitekey }}"></div>
+        {% if turnstile_sitekey %}
+            <div class="cf-turnstile" data-sitekey="{{ turnstile_sitekey }}"></div>
+        {% endif %}
         <button type="submit">Send</button>
     </form>
 </div>

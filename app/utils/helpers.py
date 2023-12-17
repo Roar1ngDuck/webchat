@@ -231,7 +231,7 @@ def delete_area(area_id):
     Database().execute(sql, {"area_id": area_id}, False)
 
 def get_turnstile_sitekey():
-    return getenv("TURNSTILE_SITEKEY", "")
+    return getenv("TURNSTILE_SITEKEY", None)
 
 def full_search(query):
     # SQL queries to search areas, threads, and messages

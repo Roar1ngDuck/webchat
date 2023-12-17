@@ -41,7 +41,9 @@
                 <label for="message">First message</label>
                 <textarea name="message" rows="5" required></textarea>
             </div>
+            {% if turnstile_sitekey %}
             <div class="cf-turnstile" data-sitekey="{{ turnstile_sitekey }}"></div>
+        {% endif %}
             <button type="submit" class="modern-button">Create</button>
         </form>
     </div>
