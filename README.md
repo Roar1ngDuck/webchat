@@ -102,6 +102,7 @@ cp .env.test.example .env.test</code></pre>
   <li><strong>Secret Areas:</strong> Administrators can create secret areas with restricted user access.</li>
   <li><strong>Viewing Areas:</strong> Users can see a list of all discussion areas on the homepage along with the number of threads and messages in each area, and when the last message was sent.</li>
   <li><strong>Thread Creation:</strong> Users can create a new thread in an area by providing a thread title and the content of the initial message.</li>
+  <li><strong>Search:</strong> Users can search area topics, thread titles, and message content for given text.</li>
 </ul>
 
 <h3>Messaging</h3>
