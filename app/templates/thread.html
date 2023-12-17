@@ -7,9 +7,6 @@
 {% endblock %}
 
 {% block navbar %}
-{% if session['user_id'] == thread.owner_id or is_admin %}
-<button id="deleteThreadBtn" class="modern-button red-border">Delete Thread</button>
-{% endif %}
 <form id="subscriptionForm" action="{{ url_for('chat.toggle_subscription', thread_id=thread.id) }}" method="post" style="display: none;">
     <input type="hidden" name="csrf_token" value="{{ csrf_token }}"/>
 </form>
@@ -20,6 +17,9 @@
         Subscribe
     {% endif %}
 </button>
+{% if session['user_id'] == thread.owner_id or is_admin %}
+<button id="deleteThreadBtn" class="modern-button red-border">Delete Thread</button>
+{% endif %}
 {% endblock %}
 
 {% block content %}
