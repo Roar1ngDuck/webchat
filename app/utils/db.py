@@ -27,7 +27,7 @@ class Database:
             if cls._instance is None:
                 cls._instance = super(Database, cls).__new__(cls)
                 cls._instance._engine = create_engine(getenv("DB_URL"))
-                if getenv("ENV") == "TEST":
+                if getenv("ENV") == "TEST" or True:
                     cls._instance._drop_tables()  # Drop tables if in test environment
                 cls._instance._initialize_tables()
                 cls._instance._create_admin_user()
@@ -71,7 +71,7 @@ class Database:
         CREATE TABLE IF NOT EXISTS secret_area_privileges (
             id SERIAL PRIMARY KEY,
             area_id integer NOT NULL REFERENCES areas(id) ON DELETE CASCADE,
-            user_id integer NOT NULL REFERENCES users(id)
+            user_id integer NOT NULL UNIQUE REFERENCES users(id)
         );
         CREATE TABLE IF NOT EXISTS thread_subscriptions (
             id SERIAL PRIMARY KEY,
