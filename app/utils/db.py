@@ -3,12 +3,13 @@ from threading import Lock
 from sqlalchemy import create_engine, text
 from ..utils import helpers
 
+
 class Database:
     """
     A singleton class that represents the database connection.
 
     This class ensures that only one instance of the database connection is created
-    (singleton pattern). It handles the creation, initialization, and management of 
+    (singleton pattern). It handles the creation, initialization, and management of
     database tables and provides methods for executing and fetching data from the database.
 
     Attributes:
@@ -81,8 +82,7 @@ class Database:
         admin_creation_sql = text("""INSERT INTO users (username, password, is_admin) VALUES (:username, :password, :is_admin) ON CONFLICT (username) DO NOTHING""")
         with self._engine.connect() as connection:
             with connection.begin():
-                connection.execute(admin_creation_sql, {"username" : "admin", "password" : helpers.hash_password(getenv("ADMIN_PASSWORD")), "is_admin" : True})
-
+                connection.execute(admin_creation_sql, {"username": "admin", "password": helpers.hash_password(getenv("ADMIN_PASSWORD")), "is_admin": True})
 
     def fetch_all(self, sql, params=None):
         """
@@ -112,7 +112,7 @@ class Database:
         with self._engine.connect() as connection:
             return next(connection.execute(sql, params).mappings())
 
-    def execute(self, sql, params=None, return_result = True):
+    def execute(self, sql, params=None, return_result=True):
         """
         Executes a SQL query and optionally returns the result.
 

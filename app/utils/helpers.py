@@ -21,7 +21,7 @@ def get_areas(user_id):
         list[Area]: A list of Area objects accessible to the user.
     """
 
-    areas:list[Area] = []
+    areas: list[Area] = []
 
     sql = text("""
         SELECT a.id, a.topic, a.is_secret
@@ -37,6 +37,7 @@ def get_areas(user_id):
 
     return areas
 
+
 def username_exists(username):
     """
     Checks if a username already exists in the database.
@@ -49,7 +50,8 @@ def username_exists(username):
     """
 
     sql = text("""SELECT COUNT(*) FROM users u WHERE u.username = :username""")
-    return Database().fetch_one(sql, {"username" : username})["count"] != 0
+    return Database().fetch_one(sql, {"username": username})["count"] != 0
+
 
 def verify_login(request):
     """
@@ -64,7 +66,7 @@ def verify_login(request):
 
     username = request.form["username"]
     sql = text("""SELECT u.id, u.password, is_admin FROM users u WHERE u.username = :username""")
-    result = Database().fetch_one(sql, {"username" : username})
+    result = Database().fetch_one(sql, {"username": username})
 
     if not result:
         return (None, None)
@@ -74,6 +76,7 @@ def verify_login(request):
         return (result["id"], "admin" if result["is_admin"] else "user")
 
     return (None, None)
+
 
 def hash_password(password):
     """
@@ -88,6 +91,7 @@ def hash_password(password):
 
     return bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt())
 
+
 def is_password_secure(password):
     """
     Checks if a password is secure based on certain criteria.
@@ -100,6 +104,7 @@ def is_password_secure(password):
     """
 
     return zxcvbn(password)["score"] >= 4
+
 
 def verify_turnstile(request):
     """
@@ -119,15 +124,16 @@ def verify_turnstile(request):
     turnstile_response = request.form.get("cf-turnstile-response", "")
     remote_ip = request.form.get("CF-Connecting-IP", "")
     data = {
-    'secret': getenv("TURNSTILE_SECRET", ""),
-    'response': turnstile_response,
-    'remoteip': remote_ip
+        'secret': getenv("TURNSTILE_SECRET", ""),
+        'response': turnstile_response,
+        'remoteip': remote_ip
     }
 
     # Send verification request and interpret the outcome.
     response = requests.post('https://challenges.cloudflare.com/turnstile/v0/siteverify', data=data).json()
 
     return response.get('success')
+
 
 def time_ago(date):
     """
@@ -163,6 +169,7 @@ def time_ago(date):
     else:
         return f"{int(years)} years ago"
 
+
 def is_valid_area_topic(topic):
     """
     Validates the topic of an area.
@@ -175,6 +182,7 @@ def is_valid_area_topic(topic):
     """
 
     return len(topic) > 0 and len(topic) < 64
+
 
 def is_valid_thread_title(title):
     """
@@ -189,6 +197,7 @@ def is_valid_thread_title(title):
 
     return len(title) > 0 and len(title) < 64
 
+
 def is_valid_message(message):
     """
     Validates a message's content.
@@ -201,6 +210,7 @@ def is_valid_message(message):
     """
 
     return len(message) > 0 and len(message) < 1024
+
 
 def is_valid_username(username):
     """
@@ -221,6 +231,7 @@ def is_valid_username(username):
 
     return True
 
+
 def add_user_to_secret_area(username, area_id):
     """
     Adds a user to a secret area.
@@ -231,7 +242,8 @@ def add_user_to_secret_area(username, area_id):
     """
 
     sql = text("""INSERT INTO secret_area_privileges (area_id, user_id) VALUES (:area_id, (SELECT id FROM users WHERE username = :username))""")
-    Database().execute(sql, {"username" : username, "area_id" : area_id}, False)
+    Database().execute(sql, {"username": username, "area_id": area_id}, False)
+
 
 def remove_user_from_secret_area(username, area_id):
     """
@@ -244,6 +256,7 @@ def remove_user_from_secret_area(username, area_id):
 
     sql = text("""DELETE FROM secret_area_privileges WHERE area_id = :area_id AND user_id = (SELECT id FROM users WHERE username = :username)""")
     Database().execute(sql, {"area_id": area_id, "username": username}, False)
+
 
 def get_access_list(area_id):
     """
@@ -259,6 +272,7 @@ def get_access_list(area_id):
     sql = text("""SELECT u.username FROM secret_area_privileges s, users u WHERE s.area_id = :area_id AND s.user_id = u.id""")
     return Database().fetch_all(sql, {"area_id": area_id})
 
+
 def get_message_image(message_id):
     """
     Retrieves the image URL associated with a specific message.
@@ -272,6 +286,7 @@ def get_message_image(message_id):
 
     sql = text("""SELECT image_url FROM messages WHERE id = :message_id""")
     return Database().fetch_one(sql, {"message_id": message_id})["image_url"]
+
 
 def delete_message(thread_id, message_id, user_id):
     """
@@ -296,6 +311,7 @@ def delete_message(thread_id, message_id, user_id):
     sql = text("""DELETE FROM messages m WHERE m.id = :message_id AND m.sender = :user_id""")
     Database().execute(sql, {"message_id": message_id, "user_id": user_id}, False)
 
+
 def delete_thread(thread_id):
     """
     Deletes a thread and its associated messages.
@@ -312,6 +328,7 @@ def delete_thread(thread_id):
 
     sql = text("""DELETE FROM threads WHERE id = :thread_id""")
     Database().execute(sql, {"thread_id": thread_id}, False)
+
 
 def delete_area(area_id):
     """
@@ -330,17 +347,19 @@ def delete_area(area_id):
     sql = text("""DELETE FROM areas WHERE id = :area_id""")
     Database().execute(sql, {"area_id": area_id}, False)
 
+
 def get_turnstile_sitekey():
     """
     Retrieves the Turnstile site key from environment variables.
 
-    The function checks for a site key for the Turnstile CAPTCHA service, 
+    The function checks for a site key for the Turnstile CAPTCHA service,
     which is used in the frontend for CAPTCHA verification.
 
     Returns:
         str or None: The Turnstile site key or None if not set.
     """
     return getenv("TURNSTILE_SITEKEY", None)
+
 
 def full_search(query):
     """
@@ -353,15 +372,15 @@ def full_search(query):
         query (str): The search query string.
 
     Returns:
-        tuple: A tuple containing three lists for areas, threads, and messages 
+        tuple: A tuple containing three lists for areas, threads, and messages
                where each list contains dictionaries of the respective query results.
     """
 
     area_sql = text("SELECT id, topic FROM areas WHERE topic ILIKE :query")
     thread_sql = text("""
-        SELECT t.title, t.id, a.topic as area_topic 
-        FROM threads t 
-        JOIN areas a ON t.area = a.id 
+        SELECT t.title, t.id, a.topic as area_topic
+        FROM threads t
+        JOIN areas a ON t.area = a.id
         WHERE t.title ILIKE :query
     """)
     message_sql = text("""
@@ -379,11 +398,12 @@ def full_search(query):
 
     return areas, threads, messages
 
+
 def is_admin():
     """
     Checks if the current session is associated with an admin user.
 
-    This function checks the user's session to determine if the current user 
+    This function checks the user's session to determine if the current user
     is marked as an 'admin' in the session data.
 
     Returns:

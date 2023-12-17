@@ -21,6 +21,7 @@ def index():
     user_id = session["user_id"]
     return render_template("index.html", areas=helpers.get_areas(user_id), is_admin=helpers.is_admin(), turnstile_sitekey=helpers.get_turnstile_sitekey(), csrf_token=generate_csrf())
 
+
 @chat_blueprint.route("/create_area", methods=['POST'])
 @login_required
 @captcha_required
@@ -41,6 +42,7 @@ def create_area():
     flash("Area created successfully", "success")
     return redirect(url_for("chat.index"))
 
+
 @chat_blueprint.route("/area/<int:area_id>", methods=['GET'])
 @login_required
 @captcha_required
@@ -57,6 +59,7 @@ def view_area(area_id):
 
     # Render the area page with appropriate data and access controls.
     return render_template("area.html", area=area, is_admin=helpers.is_admin(), access_list=access_list, turnstile_sitekey=helpers.get_turnstile_sitekey(), csrf_token=generate_csrf())
+
 
 @chat_blueprint.route("/area/<int:area_id>/create_thread", methods=['POST'])
 def create_thread(area_id):
@@ -76,6 +79,7 @@ def create_thread(area_id):
     flash("Thread created successfully", "success")
     return redirect(url_for("chat.view_area", area_id=area_id))
 
+
 @chat_blueprint.route("/thread/<int:thread_id>", methods=['GET'])
 @login_required
 def view_thread(thread_id):
@@ -86,6 +90,7 @@ def view_thread(thread_id):
         return redirect(url_for("chat.index"))
     return render_template("thread.html", thread=thread, turnstile_sitekey=helpers.get_turnstile_sitekey(), is_admin=helpers.is_admin(), csrf_token=generate_csrf())
 
+
 @chat_blueprint.route("/thread/<int:thread_id>/send_message", methods=['POST'])
 @login_required
 @captcha_required
@@ -94,7 +99,7 @@ def send_message(thread_id):
     if not helpers.is_valid_message(request.form["message"]):
         flash("Invalid message", "error")
         return render_template("thread.html", thread=Thread.create_from_db(thread_id), turnstile_sitekey=helpers.get_turnstile_sitekey(), csrf_token=generate_csrf())
-    
+
     filename = None
     if "image" in request.files and request.files["image"].filename != "":
         Path("./app/static/uploads").mkdir(parents=True, exist_ok=True)
@@ -110,6 +115,7 @@ def send_message(thread_id):
 
     # Redirect back to the thread page after adding a new message.
     return redirect(url_for("chat.view_thread", thread_id=thread_id))
+
 
 @chat_blueprint.route("/manage_area_access", methods=['POST'])
 @login_required
@@ -131,6 +137,7 @@ def manage_area_access():
 
     return redirect(url_for("chat.view_area", area_id=request.form["area_id"]))
 
+
 @chat_blueprint.route("/delete_thread/<int:thread_id>", methods=['POST'])
 @login_required
 def delete_thread(thread_id):
@@ -140,7 +147,7 @@ def delete_thread(thread_id):
         flash("Thread does not exist", "error")
         return redirect(url_for("chat.index"))
 
-     # Redirect with to index if not authorized
+    # Redirect to index if not authorized
     if session["user_id"] != thread.owner_id and helpers.is_admin():
         return redirect(url_for("chat.index"))
 
@@ -148,6 +155,7 @@ def delete_thread(thread_id):
 
     # Redirect to the area page after deletion
     return redirect(url_for("chat.view_area", area_id=thread.area))
+
 
 @chat_blueprint.route("/delete_message/<int:message_id>/<int:thread_id>", methods=['POST'])
 @login_required
@@ -161,6 +169,7 @@ def delete_message(message_id, thread_id):
     # Redirect back to the thread view.
     return redirect(url_for("chat.view_thread", thread_id=thread_id))
 
+
 @chat_blueprint.route("/delete_area/<int:area_id>", methods=['POST'])
 @login_required
 def delete_area(area_id):
@@ -171,6 +180,7 @@ def delete_area(area_id):
     flash("Area deleted successfully", "success")
     return redirect(url_for("chat.index"))
 
+
 @chat_blueprint.route("/search", methods=['GET'])
 @login_required
 def search():
@@ -179,6 +189,7 @@ def search():
     areas, threads, messages = helpers.full_search(query)
 
     return render_template("search_results.html", areas=areas, threads=threads, messages=messages, csrf_token=generate_csrf())
+
 
 @chat_blueprint.route("/login", methods=['GET', 'POST'])
 @captcha_required
@@ -231,7 +242,7 @@ def register():
         # Ensure the password meets security standards, such as minimum complexity.
         if not helpers.is_password_secure(request.form["password"]):
             flash("Password too weak", "error")
-            return render_template("register.html", turnstile_sitekey=helpers.get_turnstile_sitekey(), csrf_token=generate_csrf())  
+            return render_template("register.html", turnstile_sitekey=helpers.get_turnstile_sitekey(), csrf_token=generate_csrf())
 
         # Confirm that the password and confirmation password fields match.
         if request.form["password"] != request.form["confirm_password"]:

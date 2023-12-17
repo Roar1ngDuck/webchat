@@ -3,6 +3,7 @@ from sqlalchemy import text
 from ..utils.db import Database
 from ..utils import helpers
 
+
 class Message:
     """
     Represents a message in the discussion platform.
@@ -21,7 +22,7 @@ class Message:
         sent_time (datetime, optional): The timestamp when the message was sent.
     """
 
-    def __init__(self, thread, sender, text, image_url = None, message_id = None, thread_title = None, sender_name = None, sent_time = None):
+    def __init__(self, thread, sender, text, image_url=None, message_id=None, thread_title=None, sender_name=None, sent_time=None):
         """
         Initializes a Message object.
 

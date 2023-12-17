@@ -2,6 +2,7 @@ from sqlalchemy import text
 from ..utils import helpers
 from ..utils.db import Database
 
+
 class User:
     """
     Represents a user in the discussion platform.
@@ -16,7 +17,7 @@ class User:
         id (int, optional): The unique identifier of the user in the database, set after insertion.
     """
 
-    def __init__(self, username, password, is_admin = False):
+    def __init__(self, username, password, is_admin=False):
         """
         Initializes a User object.
 
@@ -33,4 +34,4 @@ class User:
 
     def insert(self):
         sql = text("""INSERT INTO users (username, password, is_admin) VALUES (:username, :password, :is_admin) RETURNING id""")
-        self.id = self.db.execute(sql, {"username" : self.username, "password" : self.password, "is_admin" : self.is_admin})["id"]
+        self.id = self.db.execute(sql, {"username": self.username, "password": self.password, "is_admin": self.is_admin})["id"]

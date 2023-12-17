@@ -2,6 +2,7 @@ from functools import wraps
 from flask import request, session, redirect, url_for, flash
 from ..utils import helpers
 
+
 def login_required(f):
     """
     Decorator to enforce user login for protected routes.
@@ -21,6 +22,7 @@ def login_required(f):
             return redirect(url_for("chat.login"))
         return f(*args, **kwargs)
     return _login_required
+
 
 def captcha_required(f):
     """
