@@ -82,7 +82,7 @@ class Database:
         CREATE TABLE IF NOT EXISTS notifications (
             id SERIAL PRIMARY KEY,
             user_id integer NOT NULL REFERENCES users(id),
-            thread_id integer NOT NULL REFERENCES threads(id),
+            thread_id integer NOT NULL REFERENCES threads(id) ON DELETE CASCADE,
             sender_id integer NOT NULL REFERENCES users(id),
             message TEXT NOT NULL,
             sent_time TIMESTAMP WITHOUT TIME ZONE DEFAULT (CURRENT_TIMESTAMP AT TIME ZONE 'UTC')
