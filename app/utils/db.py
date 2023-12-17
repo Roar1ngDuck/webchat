@@ -55,7 +55,7 @@ class Database:
         );
         CREATE TABLE IF NOT EXISTS secret_area_privileges (
             id SERIAL PRIMARY KEY,
-            area_id integer NOT NULL REFERENCES areas(id),
+            area_id integer NOT NULL REFERENCES areas(id) ON DELETE CASCADE,
             user_id integer NOT NULL REFERENCES users(id)
         );
         """

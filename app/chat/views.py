@@ -7,6 +7,7 @@ from ..models.message import Message
 from ..utils.decorators import login_required, captcha_required
 from pathlib import Path
 import uuid
+import os
 
 # Blueprint setup for chat functionality, enabling modularization and URL prefixing.
 chat_blueprint = Blueprint('chat', __name__, url_prefix='/', static_folder='../static')
@@ -135,7 +136,7 @@ def delete_thread(thread_id):
         return redirect(url_for("chat.index"))
 
      # Redirect with to index if not authorized
-    if session["user_id"] != thread.owner_id and session["is_admin"] != "True":
+    if session["user_id"] != thread.owner_id and helpers.is_admin():
         return redirect(url_for("chat.index"))
 
     helpers.delete_thread(thread_id)
@@ -146,7 +147,10 @@ def delete_thread(thread_id):
 @chat_blueprint.route("/delete_message/<int:message_id>/<int:thread_id>", methods=['POST'])
 @login_required
 def delete_message(message_id, thread_id):
-    # Handle POST request to delete a message.
+    image = helpers.get_message_image(message_id)
+    if image != None:
+        os.remove("./app" + image)
+
     helpers.delete_message(thread_id, message_id, session["user_id"])
 
     # Redirect back to the thread view.
@@ -155,7 +159,7 @@ def delete_message(message_id, thread_id):
 @chat_blueprint.route("/delete_area/<int:area_id>", methods=['POST'])
 @login_required
 def delete_area(area_id):
-    if session["is_admin"] != "True":
+    if not helpers.is_admin():
         return redirect(url_for("chat.index"))
 
     helpers.delete_area(area_id)
@@ -246,7 +250,7 @@ def logout():
     # Remove user identification and session data. Uses 'None' as default to avoid KeyError.
     session.pop("user_id", None)  # Remove user_id from session.
     session.pop("username", None)  # Remove username from session.
-    session.pop("is_admin", None)  # Clear admin status from session.
+    session.pop("user", None)  # Clear admin status from session.
 
     # Redirect to the main page (index) after logging out.
     return redirect(url_for("chat.index"))

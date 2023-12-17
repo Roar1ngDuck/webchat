@@ -7,6 +7,7 @@ from ..utils.db import Database
 import requests
 from os import getenv
 from flask import session
+import os
 
 def get_areas(user_id):
     """
@@ -196,6 +197,14 @@ def get_access_list(area_id):
     sql = text("""SELECT u.username FROM secret_area_privileges s, users u WHERE s.area_id = :area_id AND s.user_id = u.id""")
     return Database().fetch_all(sql, {"area_id": area_id})
 
+def get_message_image(message_id):
+    """
+    Retrieves the image file associated with a message.
+    """
+
+    sql = text("""SELECT image_url FROM messages WHERE id = :message_id""")
+    return Database().fetch_one(sql, {"message_id": message_id})["image_url"]
+
 def delete_message(thread_id, message_id, user_id):
     """
     Deletes a message from the database and also deletes the thread if the message is the only one in the thread.
@@ -219,6 +228,12 @@ def delete_thread(thread_id):
     Deletes a thread from the database.
     """
 
+    sql = text("""SELECT image_url FROM messages WHERE thread = :thread_id""")
+    image_urls = Database().fetch_all(sql, {"thread_id": thread_id})
+    for image_url in image_urls:
+        if image_url["image_url"] != None:
+            os.remove("./app" + image_url["image_url"])
+
     sql = text("""DELETE FROM threads WHERE id = :thread_id""")
     Database().execute(sql, {"thread_id": thread_id}, False)
 
@@ -226,6 +241,12 @@ def delete_area(area_id):
     """
     Deletes an area from the database.
     """
+
+    sql = text("""SELECT image_url FROM messages WHERE thread in (SELECT id FROM threads WHERE area = :area_id)""")
+    image_urls = Database().fetch_all(sql, {"area_id": area_id})
+    for image_url in image_urls:
+        if image_url["image_url"] != None:
+            os.remove("./app" + image_url["image_url"])
 
     sql = text("""DELETE FROM areas WHERE id = :area_id""")
     Database().execute(sql, {"area_id": area_id}, False)
