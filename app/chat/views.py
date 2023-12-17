@@ -95,7 +95,7 @@ def view_thread(thread_id):
             return render_template("thread.html", thread=Thread.create_from_db(thread_id), turnstile_sitekey = helpers.get_turnstile_sitekey(), error=True)
         
         filename = None
-        if "image" in request.files:
+        if "image" in request.files and request.files["image"].filename != "":
             Path("./app/static/uploads").mkdir(parents=True, exist_ok=True)
             image = request.files["image"]
             rand = str(uuid.uuid4())
